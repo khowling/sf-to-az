@@ -31,31 +31,49 @@ function StageProgress({ current }: { current: string }) {
   const isLost = current === 'Closed Lost';
 
   return (
-    <div className="slds-path">
-      <div className="slds-grid slds-path__track">
-        <div className="slds-grid slds-path__scroller-container">
-          <div className="slds-path__scroller">
-            <div className="slds-path__scroller_inner" role="listbox">
-              {stages.map((stage, i) => {
-                let stepClass = 'slds-path__item slds-is-incomplete';
-                if (i < activeIdx) stepClass = 'slds-path__item slds-is-complete';
-                if (stage === current) {
-                  stepClass = 'slds-path__item slds-is-current';
-                  if (isWon) stepClass += ' slds-is-won';
-                  if (isLost) stepClass += ' slds-is-lost';
-                }
-                return (
-                  <li key={stage} className={stepClass} role="presentation">
-                    <a className="slds-path__link" role="option" tabIndex={-1}>
-                      <span className="slds-path__title">{stage}</span>
-                    </a>
-                  </li>
-                );
-              })}
+    <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+      {stages.map((stage, i) => {
+        const isComplete = i < activeIdx;
+        const isCurrent = stage === current;
+
+        let bg = '#e5e7eb';
+        let fg = '#6b7280';
+        let border = '#d1d5db';
+        if (isComplete) { bg = '#0176d3'; fg = '#fff'; border = '#0176d3'; }
+        if (isCurrent && isWon) { bg = '#2e844a'; fg = '#fff'; border = '#2e844a'; }
+        else if (isCurrent && isLost) { bg = '#c23934'; fg = '#fff'; border = '#c23934'; }
+        else if (isCurrent) { bg = '#0176d3'; fg = '#fff'; border = '#0176d3'; }
+
+        return (
+          <div key={stage} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <div
+              style={{
+                flex: 1,
+                position: 'relative',
+                padding: '0.5rem 0.75rem',
+                backgroundColor: bg,
+                color: fg,
+                textAlign: 'center',
+                fontSize: '0.75rem',
+                fontWeight: isCurrent ? 700 : 500,
+                clipPath: i === 0
+                  ? 'polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)'
+                  : i === stages.length - 1
+                  ? 'polygon(12px 0, 100% 0, 100% 100%, 0 100%, 12px 50%)'
+                  : 'polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)',
+                marginLeft: i > 0 ? '-6px' : 0,
+                zIndex: stages.length - i,
+                boxShadow: isCurrent ? '0 0 0 2px #fff, 0 0 0 4px ' + border : 'none',
+                borderRadius: isCurrent ? '2px' : 0,
+                transition: 'all 0.2s ease',
+                lineHeight: 1.3,
+              }}
+            >
+              {isComplete ? '✓ ' : ''}{stage}
             </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
