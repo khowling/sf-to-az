@@ -57,31 +57,43 @@ export default function Layout() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           <div
             style={{
-              width: '2rem',
-              height: '2rem',
-              borderRadius: '0.5rem',
-              background: 'linear-gradient(135deg, #fff 0%, #b0d5ff 100%)',
+              width: '2.125rem',
+              height: '2.125rem',
+              borderRadius: '0.625rem',
+              background: 'linear-gradient(135deg, #1b96ff 0%, #032d60 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2)',
+              border: '1.5px solid rgba(255,255,255,0.3)',
             }}
           >
-            <svg viewBox="0 0 24 24" style={{ width: '1.25rem', height: '1.25rem', color: '#032d60' }} fill="currentColor">
-              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+            <span style={{ color: '#fff', fontSize: '0.9375rem', fontWeight: 900, fontFamily: 'system-ui', lineHeight: 1 }}>C</span>
           </div>
-          <span
-            style={{
-              color: '#fff',
-              fontSize: '1.125rem',
-              fontWeight: 800,
-              letterSpacing: '0.08em',
-              textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            }}
-          >
-            AZCRM
-          </span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
+            <span
+              style={{
+                color: '#fff',
+                fontSize: '1.0625rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}
+            >
+              Coveney
+            </span>
+            <span
+              style={{
+                color: 'rgba(176,213,255,0.9)',
+                fontSize: '1.0625rem',
+                fontWeight: 400,
+                letterSpacing: '0.02em',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}
+            >
+              RM
+            </span>
+          </div>
         </div>
 
         {/* Nav links */}
