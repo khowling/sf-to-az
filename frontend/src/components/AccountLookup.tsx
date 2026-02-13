@@ -27,50 +27,62 @@ export default function AccountLookup({ value, onChange, error }: AccountLookupP
   }, []);
 
   return (
-    <div ref={ref} className="relative">
-      <input
-        type="text"
-        placeholder="Search accounts…"
-        value={open ? search : selected?.name ?? ''}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => {
-          setOpen(true);
-          setSearch('');
-        }}
-        className={`w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0176d3] focus:border-transparent ${
-          error ? 'border-red-400' : 'border-gray-300'
-        }`}
-      />
-      {value && (
-        <button
-          type="button"
-          onClick={() => { onChange(null); setSearch(''); }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
-        >
-          ✕
-        </button>
-      )}
-      {open && (
-        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
-          {filtered.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-400">No accounts found</li>
-          ) : (
-            filtered.map((a) => (
-              <li
-                key={a.id}
-                onClick={() => { onChange(a.id); setOpen(false); setSearch(''); }}
-                className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-50"
-              >
-                {a.name}
-              </li>
-            ))
+    <div ref={ref} className="slds-combobox_container" style={{ position: 'relative' }}>
+      <div className="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" role="combobox">
+        <div className="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+          <input
+            type="text"
+            placeholder="Search accounts…"
+            value={open ? search : selected?.name ?? ''}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => {
+              setOpen(true);
+              setSearch('');
+            }}
+            className="slds-input slds-combobox__input"
+            role="textbox"
+            autoComplete="off"
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => { onChange(null); setSearch(''); }}
+              className="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+              style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)' }}
+            >
+              <span className="slds-assistive-text">Clear</span>✕
+            </button>
           )}
-        </ul>
-      )}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+        </div>
+        {open && (
+          <div className="slds-dropdown slds-dropdown_length-5 slds-dropdown_fluid" role="listbox" style={{ display: 'block' }}>
+            <ul className="slds-listbox slds-listbox_vertical" role="presentation">
+              {filtered.length === 0 ? (
+                <li className="slds-listbox__item slds-p-around_small slds-text-color_weak" role="presentation">No accounts found</li>
+              ) : (
+                filtered.map((a) => (
+                  <li
+                    key={a.id}
+                    role="presentation"
+                    className="slds-listbox__item"
+                    onClick={() => { onChange(a.id); setOpen(false); setSearch(''); }}
+                  >
+                    <div className="slds-media slds-listbox__option slds-listbox__option_plain slds-media_small" role="option" style={{ cursor: 'pointer' }}>
+                      <span className="slds-media__body">
+                        <span className="slds-truncate">{a.name}</span>
+                      </span>
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+      {error && <div className="slds-form-element__help">{error}</div>}
     </div>
   );
 }

@@ -12,20 +12,26 @@ export default function Modal({ isOpen, onClose, title, children, footer }: Moda
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
-            ✕
-          </button>
+    <>
+      <section role="dialog" tabIndex={-1} className="slds-modal slds-fade-in-open">
+        <div className="slds-modal__container">
+          <header className="slds-modal__header">
+            <button className="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onClick={onClose}>
+              <span className="slds-assistive-text">Close</span>✕
+            </button>
+            <h2 className="slds-text-heading_medium slds-hyphenate">{title}</h2>
+          </header>
+          <div className="slds-modal__content slds-p-around_medium" style={{ overflow: 'auto' }}>
+            {children}
+          </div>
+          {footer && (
+            <footer className="slds-modal__footer">
+              {footer}
+            </footer>
+          )}
         </div>
-        <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
-        {footer && (
-          <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-200">{footer}</div>
-        )}
-      </div>
-    </div>
+      </section>
+      <div className="slds-backdrop slds-backdrop_open" onClick={onClose}></div>
+    </>
   );
 }
