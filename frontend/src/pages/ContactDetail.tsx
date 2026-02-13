@@ -61,7 +61,7 @@ export default function ContactDetail() {
     updateMut.mutate(editValues);
   };
 
-  if (isLoading || !contact) return <p className="text-gray-500">Loading…</p>;
+  if (isLoading || !contact) return <p className="slds-text-color_weak">Loading…</p>;
 
   const highlights = [
     { label: 'Email', value: contact.email },
@@ -71,63 +71,83 @@ export default function ContactDetail() {
 
   return (
     <div>
-      <div className="bg-white rounded-lg shadow mb-4">
-        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Contact</p>
-            <h1 className="text-xl font-bold text-gray-800">{contact.firstName} {contact.lastName}</h1>
+      <div className="slds-page-header slds-m-bottom_medium">
+        <div className="slds-page-header__row">
+          <div className="slds-page-header__col-title">
+            <div className="slds-media">
+              <div className="slds-media__body">
+                <div className="slds-page-header__name">
+                  <div className="slds-page-header__name-title">
+                    <span className="slds-page-header__name-meta">Contact</span>
+                    <h1><span className="slds-page-header__title slds-truncate">{contact.firstName} {contact.lastName}</span></h1>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={startEdit} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Edit</button>
-            <button onClick={() => { if (confirm('Delete this contact?')) deleteMut.mutate(); }} className="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-md hover:bg-red-50">Delete</button>
+          <div className="slds-page-header__col-actions">
+            <div className="slds-page-header__controls">
+              <button onClick={startEdit} className="slds-button slds-button_neutral">Edit</button>
+              <button onClick={() => { if (confirm('Delete this contact?')) deleteMut.mutate(); }} className="slds-button slds-button_destructive">Delete</button>
+            </div>
           </div>
         </div>
-        <div className="px-6 py-3 flex gap-8">
-          {highlights.map((h) => (
-            <div key={h.label}>
-              <p className="text-xs text-gray-500">{h.label}</p>
-              {h.link ? (
-                <Link to={h.link} className="text-sm font-medium text-[#0176d3] hover:underline">{h.value}</Link>
-              ) : (
-                <p className="text-sm font-medium text-gray-800">{h.value || '—'}</p>
-              )}
-            </div>
-          ))}
+        <div className="slds-page-header__row slds-page-header__row_gutters">
+          <div className="slds-page-header__col-details">
+            <ul className="slds-page-header__detail-row">
+              {highlights.map((h) => (
+                <li key={h.label} className="slds-page-header__detail-block">
+                  <p className="slds-text-title slds-truncate">{h.label}</p>
+                  {h.link ? (
+                    <Link to={h.link} className="slds-text-body_regular" style={{ color: '#0176d3' }}>{h.value}</Link>
+                  ) : (
+                    <p className="slds-text-body_regular slds-truncate">{h.value || '—'}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        {editing ? (
-          <>
-            <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
-            <div className="flex gap-2 mt-4">
-              <button onClick={handleSave} className="px-4 py-2 text-sm bg-[#0176d3] text-white rounded-md hover:bg-[#014486]">Save</button>
-              <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+      <div className="slds-card">
+        <div className="slds-card__body slds-card__body_inner">
+          {editing ? (
+            <>
+              <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
+              <div className="slds-m-top_medium">
+                <button onClick={handleSave} className="slds-button slds-button_brand">Save</button>
+                <button onClick={() => setEditing(false)} className="slds-button slds-button_neutral slds-m-left_x-small">Cancel</button>
+              </div>
+            </>
+          ) : (
+            <div className="slds-grid slds-wrap slds-gutters_small">
+              {allFields.map((f) => {
+                let val: unknown;
+                if (['firstName', 'lastName', 'email', 'phone', 'accountId'].includes(f.fieldName)) {
+                  val = (contact as unknown as Record<string, unknown>)[f.fieldName];
+                  if (f.fieldName === 'accountId') val = linkedAccount?.name ?? val;
+                } else {
+                  val = contact.customFields?.[f.fieldName];
+                }
+                return (
+                  <div key={f.fieldName} className="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_xx-small">
+                    <div className="slds-form-element slds-form-element_readonly">
+                      <span className="slds-form-element__label">{f.label}</span>
+                      <div className="slds-form-element__control">
+                        {f.fieldType === 'boolean' ? (
+                          <input type="checkbox" checked={!!val} disabled className="slds-checkbox" />
+                        ) : (
+                          <div className="slds-form-element__static">{val != null && val !== '' ? String(val) : '—'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {allFields.map((f) => {
-              let val: unknown;
-              if (['firstName', 'lastName', 'email', 'phone', 'accountId'].includes(f.fieldName)) {
-                val = (contact as unknown as Record<string, unknown>)[f.fieldName];
-                if (f.fieldName === 'accountId') val = linkedAccount?.name ?? val;
-              } else {
-                val = contact.customFields?.[f.fieldName];
-              }
-              return (
-                <div key={f.fieldName}>
-                  <p className="text-xs text-gray-500">{f.label}</p>
-                  {f.fieldType === 'boolean' ? (
-                    <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-[#0176d3]" />
-                  ) : (
-                    <p className="text-sm text-gray-800">{val != null && val !== '' ? String(val) : '—'}</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

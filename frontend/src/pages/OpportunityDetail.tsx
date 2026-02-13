@@ -26,45 +26,36 @@ const stageColors: Record<string, string> = {
 const stages = ['Prospecting', 'Qualification', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
 
 function StageProgress({ current }: { current: string }) {
-  const isClosed = current === 'Closed Won' || current === 'Closed Lost';
+  const activeIdx = stages.indexOf(current);
   const isWon = current === 'Closed Won';
   const isLost = current === 'Closed Lost';
-  const activeIdx = stages.indexOf(current);
 
   return (
-    <div className="flex items-center w-full">
-      {stages.map((stage, i) => {
-        const isClosedStage = stage === 'Closed Won' || stage === 'Closed Lost';
-        const isPast = i < activeIdx && !isClosedStage;
-        const isActive = stage === current;
-
-        let bg = 'bg-gray-200 text-gray-500';
-        if (isPast) bg = 'bg-[#0176d3] text-white';
-        if (isActive && isWon) bg = 'bg-green-500 text-white';
-        if (isActive && isLost) bg = 'bg-red-500 text-white';
-        if (isActive && !isClosed) bg = 'bg-[#0176d3] text-white ring-2 ring-[#0176d3] ring-offset-2';
-
-        // Hide the opposite closed stage
-        if (isClosedStage && !isActive && isClosed) return null;
-        // When not closed, show both closed stages dimmed
-        if (isClosedStage && !isClosed) bg = 'bg-gray-200 text-gray-400';
-
-        return (
-          <div key={stage} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center flex-shrink-0">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${bg} transition-all`}>
-                {isPast ? '✓' : isActive && isWon ? '★' : isActive && isLost ? '✕' : i + 1}
-              </div>
-              <span className={`text-[10px] mt-1 text-center leading-tight w-16 ${isActive ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>
-                {stage}
-              </span>
+    <div className="slds-path">
+      <div className="slds-grid slds-path__track">
+        <div className="slds-grid slds-path__scroller-container">
+          <div className="slds-path__scroller">
+            <div className="slds-path__scroller_inner" role="listbox">
+              {stages.map((stage, i) => {
+                let stepClass = 'slds-path__item slds-is-incomplete';
+                if (i < activeIdx) stepClass = 'slds-path__item slds-is-complete';
+                if (stage === current) {
+                  stepClass = 'slds-path__item slds-is-current';
+                  if (isWon) stepClass += ' slds-is-won';
+                  if (isLost) stepClass += ' slds-is-lost';
+                }
+                return (
+                  <li key={stage} className={stepClass} role="presentation">
+                    <a className="slds-path__link" role="option" tabIndex={-1}>
+                      <span className="slds-path__title">{stage}</span>
+                    </a>
+                  </li>
+                );
+              })}
             </div>
-            {i < stages.length - 1 && !(isClosedStage && !isActive && isClosed) && (
-              <div className={`h-0.5 flex-1 mx-1 ${isPast ? 'bg-[#0176d3]' : 'bg-gray-200'} transition-all`} />
-            )}
           </div>
-        );
-      })}
+        </div>
+      </div>
     </div>
   );
 }
@@ -101,18 +92,18 @@ function TimeHorizon({ closeDate }: { closeDate: string | null }) {
   const pct = Math.round((elapsed / totalSpan) * 100);
 
   return (
-    <div className={`rounded-lg border px-4 py-3 ${color}`}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">{icon} {isPast ? 'Overdue' : 'Time Remaining'}</span>
-        <span className="text-sm font-bold">{label}</span>
+    <div className={`slds-box rounded-lg border px-4 py-3 ${color}`}>
+      <div className="flex items-center justify-between slds-m-bottom_xx-small">
+        <span className="slds-text-title_caps">{icon} {isPast ? 'Overdue' : 'Time Remaining'}</span>
+        <span className="slds-text-body_regular" style={{ fontWeight: 700 }}>{label}</span>
       </div>
-      <div className="w-full bg-white/60 rounded-full h-2">
-        <div
-          className={`h-2 rounded-full transition-all ${isPast ? 'bg-red-400' : diffDays <= 7 ? 'bg-orange-400' : diffDays <= 30 ? 'bg-yellow-400' : 'bg-green-400'}`}
-          style={{ width: `${pct}%` }}
+      <div className="slds-progress-bar slds-progress-bar_circular" style={{ backgroundColor: 'rgba(255,255,255,0.6)', height: '0.5rem', borderRadius: '9999px' }}>
+        <span
+          className="slds-progress-bar__value"
+          style={{ width: `${pct}%`, backgroundColor: isPast ? '#ea001e' : diffDays <= 7 ? '#fe9339' : diffDays <= 30 ? '#e4a201' : '#2e844a', borderRadius: '9999px' }}
         />
       </div>
-      <p className="text-xs mt-1 opacity-75">
+      <p className="slds-text-body_small slds-m-top_xx-small" style={{ opacity: 0.75 }}>
         Close date: {close.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
       </p>
     </div>
@@ -166,7 +157,7 @@ export default function OpportunityDetail() {
     updateMut.mutate(editValues);
   };
 
-  if (isLoading || !opp) return <p className="text-gray-500">Loading…</p>;
+  if (isLoading || !opp) return <p className="slds-text-color_weak">Loading…</p>;
 
   const stageClass = stageColors[opp.stage] ?? 'bg-gray-100 text-gray-800';
 
@@ -179,79 +170,103 @@ export default function OpportunityDetail() {
 
   return (
     <div>
-      <div className="bg-white rounded-lg shadow mb-4">
-        <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
-          <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide">Opportunity</p>
-            <h1 className="text-xl font-bold text-gray-800">{opp.name}</h1>
+      <div className="slds-page-header slds-m-bottom_medium">
+        <div className="slds-page-header__row">
+          <div className="slds-page-header__col-title">
+            <div className="slds-media">
+              <div className="slds-media__body">
+                <div className="slds-page-header__name">
+                  <div className="slds-page-header__name-title">
+                    <span className="slds-page-header__name-meta">Opportunity</span>
+                    <h1><span className="slds-page-header__title slds-truncate">{opp.name}</span></h1>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button onClick={startEdit} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Edit</button>
-            <button onClick={() => { if (confirm('Delete this opportunity?')) deleteMut.mutate(); }} className="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-md hover:bg-red-50">Delete</button>
+          <div className="slds-page-header__col-actions">
+            <div className="slds-page-header__controls">
+              <button onClick={startEdit} className="slds-button slds-button_neutral">Edit</button>
+              <button onClick={() => { if (confirm('Delete this opportunity?')) deleteMut.mutate(); }} className="slds-button slds-button_destructive">Delete</button>
+            </div>
           </div>
         </div>
-        <div className="px-6 py-3 flex gap-8">
-          {highlights.map((h) => (
-            <div key={h.label}>
-              <p className="text-xs text-gray-500">{h.label}</p>
-              {h.link ? (
-                <Link to={h.link} className="text-sm font-medium text-[#0176d3] hover:underline">{h.value}</Link>
-              ) : h.badge ? (
-                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${stageClass}`}>{h.value}</span>
-              ) : (
-                <p className="text-sm font-medium text-gray-800">{h.value}</p>
-              )}
-            </div>
-          ))}
+        <div className="slds-page-header__row slds-page-header__row_gutters">
+          <div className="slds-page-header__col-details">
+            <ul className="slds-page-header__detail-row">
+              {highlights.map((h) => (
+                <li key={h.label} className="slds-page-header__detail-block">
+                  <p className="slds-text-title slds-truncate">{h.label}</p>
+                  {h.link ? (
+                    <Link to={h.link} className="slds-text-body_regular" style={{ color: '#0176d3' }}>{h.value}</Link>
+                  ) : h.badge ? (
+                    <span className={`slds-badge ${stageClass}`}>{h.value}</span>
+                  ) : (
+                    <p className="slds-text-body_regular slds-truncate">{h.value}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
       {/* Stage Progress + Time Horizon */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div className="lg:col-span-2 bg-white rounded-lg shadow px-6 py-4">
-          <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Sales Path</p>
-          <StageProgress current={opp.stage} />
+      <div className="slds-grid slds-wrap slds-gutters slds-m-bottom_medium">
+        <div className="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+          <div className="slds-card">
+            <div className="slds-card__body slds-card__body_inner">
+              <p className="slds-text-title slds-m-bottom_small">Sales Path</p>
+              <StageProgress current={opp.stage} />
+            </div>
+          </div>
         </div>
-        <div>
+        <div className="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
           <TimeHorizon closeDate={opp.closeDate} />
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        {editing ? (
-          <>
-            <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
-            <div className="flex gap-2 mt-4">
-              <button onClick={handleSave} className="px-4 py-2 text-sm bg-[#0176d3] text-white rounded-md hover:bg-[#014486]">Save</button>
-              <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+      <div className="slds-card">
+        <div className="slds-card__body slds-card__body_inner">
+          {editing ? (
+            <>
+              <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
+              <div className="slds-m-top_medium">
+                <button onClick={handleSave} className="slds-button slds-button_brand">Save</button>
+                <button onClick={() => setEditing(false)} className="slds-button slds-button_neutral slds-m-left_x-small">Cancel</button>
+              </div>
+            </>
+          ) : (
+            <div className="slds-grid slds-wrap slds-gutters_small">
+              {allFields.map((f) => {
+                let val: unknown;
+                if (['name', 'accountId', 'amount', 'stage', 'closeDate'].includes(f.fieldName)) {
+                  val = (opp as unknown as Record<string, unknown>)[f.fieldName];
+                  if (f.fieldName === 'accountId') val = linkedAccount?.name ?? val;
+                  if (f.fieldName === 'amount' && val) val = `$${Number(val).toLocaleString()}`;
+                } else {
+                  val = opp.customFields?.[f.fieldName];
+                }
+                return (
+                  <div key={f.fieldName} className="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_xx-small">
+                    <div className="slds-form-element slds-form-element_readonly">
+                      <span className="slds-form-element__label">{f.label}</span>
+                      <div className="slds-form-element__control">
+                        {f.fieldName === 'stage' ? (
+                          <span className={`slds-badge ${stageClass}`}>{String(val)}</span>
+                        ) : f.fieldType === 'boolean' ? (
+                          <input type="checkbox" checked={!!val} disabled className="slds-checkbox" />
+                        ) : (
+                          <div className="slds-form-element__static">{val != null && val !== '' ? String(val) : '—'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {allFields.map((f) => {
-              let val: unknown;
-              if (['name', 'accountId', 'amount', 'stage', 'closeDate'].includes(f.fieldName)) {
-                val = (opp as unknown as Record<string, unknown>)[f.fieldName];
-                if (f.fieldName === 'accountId') val = linkedAccount?.name ?? val;
-                if (f.fieldName === 'amount' && val) val = `$${Number(val).toLocaleString()}`;
-              } else {
-                val = opp.customFields?.[f.fieldName];
-              }
-              return (
-                <div key={f.fieldName}>
-                  <p className="text-xs text-gray-500">{f.label}</p>
-                  {f.fieldName === 'stage' ? (
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${stageClass}`}>{String(val)}</span>
-                  ) : f.fieldType === 'boolean' ? (
-                    <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-[#0176d3]" />
-                  ) : (
-                    <p className="text-sm text-gray-800">{val != null && val !== '' ? String(val) : '—'}</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

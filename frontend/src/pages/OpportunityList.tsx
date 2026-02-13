@@ -54,21 +54,29 @@ export default function OpportunityList() {
     { key: 'closeDate', label: 'Close Date' },
   ];
 
-  if (isLoading) return <p className="text-gray-500">Loading…</p>;
+  if (isLoading) return <p className="slds-text-color_weak">Loading…</p>;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Opportunities</h1>
-        <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="bg-[#0176d3] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#014486] transition-colors">
-          New
-        </button>
+      <div className="slds-page-header slds-m-bottom_medium">
+        <div className="slds-page-header__row">
+          <div className="slds-page-header__col-title">
+            <h1 className="slds-page-header__title">Opportunities</h1>
+          </div>
+          <div className="slds-page-header__col-actions">
+            <div className="slds-page-header__controls">
+              <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="slds-button slds-button_brand">
+                New
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       <RecordTable columns={columns} data={opps as unknown as Record<string, unknown>[]} onRowClick={(r) => navigate(`/opportunities/${r.id}`)} searchable />
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Opportunity" footer={
         <>
-          <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-          <button onClick={handleSave} className="px-4 py-2 text-sm bg-[#0176d3] text-white rounded-md hover:bg-[#014486]">Save</button>
+          <button onClick={() => setShowModal(false)} className="slds-button slds-button_neutral">Cancel</button>
+          <button onClick={handleSave} className="slds-button slds-button_brand">Save</button>
         </>
       }>
         <RecordForm fields={formFields} values={formValues} onChange={(k, v) => setFormValues((p) => ({ ...p, [k]: v }))} errors={errors} />
