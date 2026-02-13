@@ -118,7 +118,11 @@ export default function ContactDetail() {
               return (
                 <div key={f.fieldName}>
                   <p className="text-xs text-gray-500">{f.label}</p>
-                  <p className="text-sm text-gray-800">{val != null && val !== '' ? String(val) : '—'}</p>
+                  {f.fieldType === 'boolean' ? (
+                    <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-[#0176d3]" />
+                  ) : (
+                    <p className="text-sm text-gray-800">{val != null && val !== '' ? String(val) : '—'}</p>
+                  )}
                 </div>
               );
             })}

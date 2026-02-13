@@ -23,6 +23,102 @@ const stageColors: Record<string, string> = {
   'Closed Lost': 'bg-red-100 text-red-800',
 };
 
+const stages = ['Prospecting', 'Qualification', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+
+function StageProgress({ current }: { current: string }) {
+  const isClosed = current === 'Closed Won' || current === 'Closed Lost';
+  const isWon = current === 'Closed Won';
+  const isLost = current === 'Closed Lost';
+  const activeIdx = stages.indexOf(current);
+
+  return (
+    <div className="flex items-center w-full">
+      {stages.map((stage, i) => {
+        const isClosedStage = stage === 'Closed Won' || stage === 'Closed Lost';
+        const isPast = i < activeIdx && !isClosedStage;
+        const isActive = stage === current;
+
+        let bg = 'bg-gray-200 text-gray-500';
+        if (isPast) bg = 'bg-[#0176d3] text-white';
+        if (isActive && isWon) bg = 'bg-green-500 text-white';
+        if (isActive && isLost) bg = 'bg-red-500 text-white';
+        if (isActive && !isClosed) bg = 'bg-[#0176d3] text-white ring-2 ring-[#0176d3] ring-offset-2';
+
+        // Hide the opposite closed stage
+        if (isClosedStage && !isActive && isClosed) return null;
+        // When not closed, show both closed stages dimmed
+        if (isClosedStage && !isClosed) bg = 'bg-gray-200 text-gray-400';
+
+        return (
+          <div key={stage} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${bg} transition-all`}>
+                {isPast ? '✓' : isActive && isWon ? '★' : isActive && isLost ? '✕' : i + 1}
+              </div>
+              <span className={`text-[10px] mt-1 text-center leading-tight w-16 ${isActive ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>
+                {stage}
+              </span>
+            </div>
+            {i < stages.length - 1 && !(isClosedStage && !isActive && isClosed) && (
+              <div className={`h-0.5 flex-1 mx-1 ${isPast ? 'bg-[#0176d3]' : 'bg-gray-200'} transition-all`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TimeHorizon({ closeDate }: { closeDate: string | null }) {
+  if (!closeDate) return null;
+
+  const now = new Date();
+  const close = new Date(closeDate + 'T00:00:00');
+  const diffMs = close.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  const isPast = diffDays < 0;
+  const absDays = Math.abs(diffDays);
+  const weeks = Math.floor(absDays / 7);
+  const months = Math.floor(absDays / 30);
+
+  let label: string;
+  if (absDays === 0) label = 'Today';
+  else if (absDays === 1) label = isPast ? '1 day ago' : 'Tomorrow';
+  else if (absDays < 14) label = isPast ? `${absDays} days ago` : `${absDays} days`;
+  else if (absDays < 60) label = isPast ? `${weeks} weeks ago` : `${weeks} weeks`;
+  else label = isPast ? `${months} months ago` : `${months} months`;
+
+  let color = 'text-green-600 bg-green-50 border-green-200';
+  let icon = '📅';
+  if (isPast) { color = 'text-red-600 bg-red-50 border-red-200'; icon = '⚠️'; }
+  else if (diffDays <= 7) { color = 'text-orange-600 bg-orange-50 border-orange-200'; icon = '⏰'; }
+  else if (diffDays <= 30) { color = 'text-yellow-600 bg-yellow-50 border-yellow-200'; icon = '📅'; }
+
+  // Progress bar: how far through a 90-day window
+  const totalSpan = 90;
+  const elapsed = totalSpan - Math.min(Math.max(diffDays, 0), totalSpan);
+  const pct = Math.round((elapsed / totalSpan) * 100);
+
+  return (
+    <div className={`rounded-lg border px-4 py-3 ${color}`}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium">{icon} {isPast ? 'Overdue' : 'Time Remaining'}</span>
+        <span className="text-sm font-bold">{label}</span>
+      </div>
+      <div className="w-full bg-white/60 rounded-full h-2">
+        <div
+          className={`h-2 rounded-full transition-all ${isPast ? 'bg-red-400' : diffDays <= 7 ? 'bg-orange-400' : diffDays <= 30 ? 'bg-yellow-400' : 'bg-green-400'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-xs mt-1 opacity-75">
+        Close date: {close.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+      </p>
+    </div>
+  );
+}
+
 export default function OpportunityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -110,6 +206,17 @@ export default function OpportunityDetail() {
         </div>
       </div>
 
+      {/* Stage Progress + Time Horizon */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow px-6 py-4">
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Sales Path</p>
+          <StageProgress current={opp.stage} />
+        </div>
+        <div>
+          <TimeHorizon closeDate={opp.closeDate} />
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow p-6">
         {editing ? (
           <>
@@ -135,6 +242,8 @@ export default function OpportunityDetail() {
                   <p className="text-xs text-gray-500">{f.label}</p>
                   {f.fieldName === 'stage' ? (
                     <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${stageClass}`}>{String(val)}</span>
+                  ) : f.fieldType === 'boolean' ? (
+                    <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-[#0176d3]" />
                   ) : (
                     <p className="text-sm text-gray-800">{val != null && val !== '' ? String(val) : '—'}</p>
                   )}
