@@ -68,20 +68,9 @@ export default function Layout() {
               border: '1.5px solid rgba(255,255,255,0.3)',
             }}
           >
-            <span style={{ color: '#fff', fontSize: '0.9375rem', fontWeight: 900, fontFamily: 'system-ui', lineHeight: 1 }}>C</span>
+            <span style={{ color: '#fff', fontSize: '0.9375rem', fontWeight: 900, fontFamily: 'system-ui', lineHeight: 1 }}>m</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
-            <span
-              style={{
-                color: '#fff',
-                fontSize: '1.0625rem',
-                fontWeight: 700,
-                letterSpacing: '0.02em',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-              }}
-            >
-              Coveney
-            </span>
             <span
               style={{
                 color: 'rgba(176,213,255,0.9)',
@@ -91,7 +80,18 @@ export default function Layout() {
                 textShadow: '0 1px 2px rgba(0,0,0,0.2)',
               }}
             >
-              RM
+              my
+            </span>
+            <span
+              style={{
+                color: '#fff',
+                fontSize: '1.0625rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+              }}
+            >
+              CRM
             </span>
           </div>
         </div>
