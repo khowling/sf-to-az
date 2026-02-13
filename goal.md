@@ -11,5 +11,4 @@ Allow users to add fields to these objects, using a business definition of the f
 
 You are only finished when you have a working website with a database backend that can add new opportunities and Accounts, and with one of the Opportunity fields looking up to the Account 
 
-NOTE: You will see example screenshots from salesforce UI in the `ui-images` folder, use these as a guide, but feel free to update the UI to make it fresher.
 
