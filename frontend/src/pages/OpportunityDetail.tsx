@@ -48,6 +48,8 @@ function StageProgress({ current }: { current: string }) {
           <div key={stage} className="flex items-center flex-1 min-w-0">
             <div
               className="flex-1 relative text-center transition-all min-h-8"
+              role="status"
+              aria-label={`Stage ${i + 1} of ${stages.length}: ${stage}${isComplete ? ' - Complete' : isCurrent ? ' - Current' : ' - Incomplete'}`}
               style={{
                 padding: '0.5rem 0.75rem',
                 backgroundColor: bg,
@@ -186,7 +188,7 @@ export default function OpportunityDetail() {
   return (
     <div>
       <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Opportunity</p>
             <h1 className="text-2xl font-bold text-gray-900 truncate">{opp.name}</h1>
