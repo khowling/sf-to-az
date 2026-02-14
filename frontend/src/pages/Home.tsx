@@ -79,9 +79,9 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 70 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 85 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
+                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
                 <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" />
@@ -97,9 +97,9 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 10, bottom: 70 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 10, bottom: 85 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
+                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
                 <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" />
