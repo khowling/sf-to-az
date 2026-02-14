@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
@@ -21,10 +22,11 @@ function StatCard({ label, count, subtitle, to, color }: { label: string; count:
 
 export default function Home() {
   const navigate = useNavigate();
+  const [oppPeriod, setOppPeriod] = useState('');
   const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list(1, 1) });
   const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list(1, 1) });
   const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list(1, 1) });
-  const { data: oppStats = [] } = useQuery({ queryKey: ['opportunities', 'stats'], queryFn: () => opportunitiesApi.stats() });
+  const { data: oppStats = [] } = useQuery({ queryKey: ['opportunities', 'stats', oppPeriod], queryFn: () => opportunitiesApi.stats(oppPeriod || undefined) });
   const { data: accountStats = [] } = useQuery({ queryKey: ['accounts', 'stats'], queryFn: () => accountsApi.stats() });
 
   const contacts = contactsRes?.data ?? [];
@@ -87,8 +89,15 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Opportunity Pipeline by Stage - Count */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 overflow-visible">
-          <div className="px-4 py-3 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
+            <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
+              className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
+              <option value="">All Time</option>
+              <option value="this_month">This Month</option>
+              <option value="this_quarter">This Quarter</option>
+              <option value="this_year">This Year</option>
+            </select>
           </div>
           <div className="p-3 pb-6">
             <ResponsiveContainer width="100%" height={220}>
@@ -105,8 +114,15 @@ export default function Home() {
 
         {/* Opportunity Pipeline by Stage - Value */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 overflow-visible">
-          <div className="px-4 py-3 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
+            <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
+              className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
+              <option value="">All Time</option>
+              <option value="this_month">This Month</option>
+              <option value="this_quarter">This Quarter</option>
+              <option value="this_year">This Year</option>
+            </select>
           </div>
           <div className="p-3 pb-6">
             <ResponsiveContainer width="100%" height={220}>
@@ -187,8 +203,15 @@ export default function Home() {
 
         {/* Opportunity Funnel */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-          <div className="px-4 py-3 border-b border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Funnel</h2>
+            <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
+              className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
+              <option value="">All Time</option>
+              <option value="this_month">This Month</option>
+              <option value="this_quarter">This Quarter</option>
+              <option value="this_year">This Year</option>
+            </select>
           </div>
           <div className="p-4">
             {funnelData.length > 0 ? (

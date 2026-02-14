@@ -57,7 +57,7 @@ export const opportunitiesApi = {
     if (filters?.closeDateRange) params.set('closeDateRange', filters.closeDateRange);
     return request<PaginatedResponse<Opportunity>>(`/opportunities?${params}`);
   },
-  stats: () => request<{ stage: string; count: number; value: string }[]>('/opportunities/stats'),
+  stats: (closeDateRange?: string) => request<{ stage: string; count: number; value: string }[]>(`/opportunities/stats${closeDateRange ? `?closeDateRange=${closeDateRange}` : ''}`),
   get: (id: string) => request<Opportunity>(`/opportunities/${id}`),
   create: (data: Partial<Opportunity>) => request<Opportunity>('/opportunities', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Opportunity>) => request<Opportunity>(`/opportunities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

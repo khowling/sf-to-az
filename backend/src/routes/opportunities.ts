@@ -16,12 +16,34 @@ const opportunitySchema = z.object({
 });
 
 // GET /api/opportunities/stats — aggregated counts/values by stage
-router.get('/stats', async (_req: Request, res: Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
+  const closeDateRange = req.query.closeDateRange as string | undefined;
+  const conditions = [];
+
+  if (closeDateRange) {
+    const now = new Date();
+    if (closeDateRange === 'this_month') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
+      conditions.push(gte(opportunities.closeDate, start), lte(opportunities.closeDate, end));
+    } else if (closeDateRange === 'this_quarter') {
+      const qMonth = Math.floor(now.getMonth() / 3) * 3;
+      const start = new Date(now.getFullYear(), qMonth, 1).toISOString().slice(0, 10);
+      const end = new Date(now.getFullYear(), qMonth + 3, 0).toISOString().slice(0, 10);
+      conditions.push(gte(opportunities.closeDate, start), lte(opportunities.closeDate, end));
+    } else if (closeDateRange === 'this_year') {
+      const start = `${now.getFullYear()}-01-01`;
+      const end = `${now.getFullYear()}-12-31`;
+      conditions.push(gte(opportunities.closeDate, start), lte(opportunities.closeDate, end));
+    }
+  }
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
   const rows = await db.select({
     stage: opportunities.stage,
     count: count(),
     value: sql<string>`coalesce(sum(${opportunities.amount}), 0)`,
-  }).from(opportunities).groupBy(opportunities.stage);
+  }).from(opportunities).where(where).groupBy(opportunities.stage);
   res.json(rows);
 });
 
