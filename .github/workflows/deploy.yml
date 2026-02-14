@@ -61,7 +61,10 @@ jobs:
         run: |
           EXISTING_ACR=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].loginServer" -o tsv 2>/dev/null || echo "")
           if [ -n "$EXISTING_ACR" ]; then
-            IMAGE="${EXISTING_ACR}/${{ env.APP_NAME }}:latest"
+            # Use the currently running image so Bicep doesn't try to pull a non-existent tag
+            IMAGE=$(az containerapp show --name ${{ env.APP_NAME }}-app --resource-group ${{ env.RESOURCE_GROUP }} \
+              --query "properties.template.containers[0].image" -o tsv 2>/dev/null || echo "")
+            [ -z "$IMAGE" ] && IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
           else
             IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
           fi
@@ -118,14 +121,17 @@ jobs:
 
       - name: Build and push image
         run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           IMAGE="${{ steps.acr.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}"
-          docker build -t "${IMAGE}:${{ github.sha }}" -t "${IMAGE}:latest" .
-          docker push "${IMAGE}:${{ github.sha }}"
-          docker push "${IMAGE}:latest"
+          docker build -t "${IMAGE}:${SHORT_SHA}" -t "${IMAGE}:sha-${{ github.sha }}" .
+          docker push "${IMAGE}:${SHORT_SHA}"
+          docker push "${IMAGE}:sha-${{ github.sha }}"
+          echo "IMAGE_TAG=${SHORT_SHA}" >> $GITHUB_OUTPUT
+        id: build
 
       - name: Deploy container
         run: |
-          IMAGE="${{ steps.acr.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
+          IMAGE="${{ steps.acr.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ steps.build.outputs.IMAGE_TAG }}"
           az containerapp update \
             --name ${{ env.APP_NAME }}-app \
             --resource-group ${{ env.RESOURCE_GROUP }} \
