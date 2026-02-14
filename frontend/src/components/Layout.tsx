@@ -58,14 +58,14 @@ export default function Layout() {
         </NavLink>
 
         {/* Nav */}
-        <nav className="flex items-center gap-1 h-full">
+        <nav className="flex items-center h-8 rounded-lg bg-gray-100/80 p-0.5">
           {navLinks.map(l => (
             <NavLink key={l.to} to={l.to} end={l.to === '/'}
               className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.8125rem] font-medium no-underline transition-all ${
+                `flex items-center gap-1.5 px-3 py-1 rounded-md text-[0.8125rem] font-medium no-underline transition-all ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`
               }>
               {l.icon}
