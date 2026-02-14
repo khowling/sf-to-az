@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
-import { BarChart, Bar, PieChart, Pie, FunnelChart, Funnel, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 function StatCard({ label, count, subtitle, to, color }: { label: string; count: number; subtitle?: string; to: string; color: string }) {
   return (
@@ -70,11 +70,11 @@ export default function Home() {
   const FUNNEL_COLORS = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#16a34a'];
   const funnelData = funnelStages
     .map((stage, i) => ({
-      name: stage,
-      value: oppsByStage[stage]?.count || 0,
+      stage,
+      count: oppsByStage[stage]?.count || 0,
       fill: FUNNEL_COLORS[i],
     }))
-    .filter(d => d.value > 0);
+    .filter(d => d.count > 0);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBarClick = (data: any) => {
@@ -202,23 +202,23 @@ export default function Home() {
           <div className="px-4 py-3 border-b border-gray-200">
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Funnel</h2>
           </div>
-          <div className="p-3">
+          <div className="p-4">
             {funnelData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <FunnelChart>
-                  <Tooltip formatter={(value, name) => [`${Number(value).toLocaleString()} opportunities`, name]} />
-                  <Funnel dataKey="value" data={funnelData} isAnimationActive>
-                    <LabelList position="center" fill="#fff" fontSize={10} fontWeight={600}
-                      formatter={(v: unknown) => Number(v).toLocaleString()} />
-                    <LabelList position="right" fill="#374151" fontSize={10} dataKey="name" />
-                    {funnelData.map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Funnel>
-                </FunnelChart>
-              </ResponsiveContainer>
+              <div className="flex flex-col items-center gap-1">
+                {funnelData.map((d, i) => {
+                  const maxCount = Math.max(...funnelData.map(f => f.count));
+                  const widthPct = maxCount > 0 ? Math.max(25, (d.count / maxCount) * 100) : 25;
+                  return (
+                    <button key={d.stage} onClick={() => navigate(`/opportunities?stage=${encodeURIComponent(d.stage)}`)}
+                      className="relative flex items-center justify-center py-2 rounded text-white text-xs font-semibold transition-all hover:opacity-90 cursor-pointer border-0"
+                      style={{ width: `${widthPct}%`, backgroundColor: FUNNEL_COLORS[i], minHeight: '2rem' }}>
+                      <span>{d.stage} · {d.count.toLocaleString()}</span>
+                    </button>
+                  );
+                })}
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-sm text-gray-400">No opportunity data</div>
+              <div className="flex items-center justify-center h-40 text-sm text-gray-400">No opportunity data</div>
             )}
           </div>
         </div>
