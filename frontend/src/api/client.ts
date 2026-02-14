@@ -55,3 +55,8 @@ export const pageLayoutsApi = {
   update: (objectType: string, sections: PageLayout['sections']) =>
     request<PageLayout>(`/page-layouts/${objectType}`, { method: 'PUT', body: JSON.stringify({ sections }) }),
 };
+
+// ─── Test Data Generation ───────────────────────────────
+export const testDataApi = {
+  generate: () => request<{ success: boolean; message: string; stats: { accounts: number; contacts: number; opportunities: number; durationSeconds: number } }>('/test-data/generate', { method: 'POST' }),
+};

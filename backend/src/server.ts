@@ -8,6 +8,7 @@ import contactRoutes from './routes/contacts.js';
 import opportunityRoutes from './routes/opportunities.js';
 import fieldDefinitionRoutes from './routes/fieldDefinitions.js';
 import pageLayoutRoutes from './routes/pageLayouts.js';
+import testDataRoutes from './routes/testData.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +25,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/field-definitions', fieldDefinitionRoutes);
 app.use('/api/page-layouts', pageLayoutRoutes);
+app.use('/api/test-data', testDataRoutes);
 
 // Serve frontend static files in production
 const frontendDist = path.resolve(__dirname, '../../frontend/dist');
