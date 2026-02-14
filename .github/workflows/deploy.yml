@@ -1,0 +1,104 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: mycrm-rg
+  LOCATION: westeurope
+  APP_NAME: mycrm
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create resource group
+        run: |
+          az group create \
+            --name ${{ env.RESOURCE_GROUP }} \
+            --location ${{ env.LOCATION }} \
+            --output none
+
+      # Deploy infrastructure (first run creates ACR + PostgreSQL + Container App environment)
+      # Use a placeholder image on first run; the real image is deployed in the update step
+      - name: Deploy infrastructure
+        id: infra
+        run: |
+          # Check if ACR already exists to get image name
+          EXISTING_ACR=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].loginServer" -o tsv 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING_ACR" ]; then
+            IMAGE="${EXISTING_ACR}/${{ env.APP_NAME }}:${{ github.sha }}"
+          else
+            IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
+          fi
+
+          RESULT=$(az deployment group create \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --template-file infra/main.bicep \
+            --parameters \
+              appName=${{ env.APP_NAME }} \
+              containerImage="$IMAGE" \
+              dbAdminPassword=${{ secrets.DB_ADMIN_PASSWORD }} \
+            --query 'properties.outputs' \
+            --output json)
+
+          echo "ACR_LOGIN_SERVER=$(echo $RESULT | jq -r '.acrLoginServer.value')" >> $GITHUB_OUTPUT
+          echo "ACR_NAME=$(echo $RESULT | jq -r '.acrName.value')" >> $GITHUB_OUTPUT
+          echo "APP_URL=$(echo $RESULT | jq -r '.appUrl.value')" >> $GITHUB_OUTPUT
+          echo "PG_FQDN=$(echo $RESULT | jq -r '.pgServerFqdn.value')" >> $GITHUB_OUTPUT
+
+      # Build and push container image
+      - name: Log in to ACR
+        run: |
+          az acr login --name ${{ steps.infra.outputs.ACR_NAME }}
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ steps.infra.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      # Update Container App with the real image
+      - name: Deploy container
+        run: |
+          IMAGE="${{ steps.infra.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
+          az containerapp update \
+            --name ${{ env.APP_NAME }}-app \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image "$IMAGE" \
+            --output none
+
+      # Run database migrations
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run database migrations
+        run: |
+          cd backend
+          npm ci
+          npx drizzle-kit push
+        env:
+          DATABASE_URL: postgres://crmadmin:${{ secrets.DB_ADMIN_PASSWORD }}@${{ steps.infra.outputs.PG_FQDN }}:5432/sf_crm?sslmode=require
+
+      - name: Print app URL
+        run: |
+          echo "✅ Deployed to: ${{ steps.infra.outputs.APP_URL }}"
