@@ -36,8 +36,7 @@ function generateEmail(firstName: string, lastName: string, accountName: string)
 function generateCloseDate(): string {
   const today = new Date();
   const daysOffset = randomInt(-180, 365); // -6 months to +1 year
-  const date = new Date(today);
-  date.setDate(date.getDate() + daysOffset);
+  const date = new Date(today.getTime() + daysOffset * 24 * 60 * 60 * 1000);
   return date.toISOString().split('T')[0];
 }
 
@@ -81,6 +80,7 @@ router.post('/generate', async (_req: Request, res: Response) => {
     // Generate contacts in batches
     console.log('Generating contacts...');
     const contactIds: string[] = [];
+    const CONTACT_ACCOUNT_PROBABILITY = 0.9; // 90% of contacts have associated accounts
     for (let i = 0; i < contactCount; i += batchSize) {
       const batch = [];
       const currentBatchSize = Math.min(batchSize, contactCount - i);
@@ -95,7 +95,7 @@ router.post('/generate', async (_req: Request, res: Response) => {
           lastName,
           email: generateEmail(firstName, lastName, `company${i + j}`),
           phone: generatePhone(),
-          accountId: Math.random() > 0.1 ? accountId : null, // 90% have accounts
+          accountId: Math.random() < CONTACT_ACCOUNT_PROBABILITY ? accountId : null,
           customFields: {},
         });
       }
