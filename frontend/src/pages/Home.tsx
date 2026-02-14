@@ -59,32 +59,32 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <div className="mb-4 rounded-lg bg-white px-5 py-3 shadow-sm border border-gray-200">
+        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-4">
         <StatCard label="Accounts" count={accounts.length} to="/accounts" color="#0176d3" />
         <StatCard label="Contacts" count={contacts.length} to="/contacts" color="#06a59a" />
         <StatCard label="Opportunities" count={opps.length} subtitle={`Pipeline: ${fmt.format(pipeline)}`} to="/opportunities" color="#9050e9" />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Opportunity Pipeline by Stage - Count */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
           </div>
-          <div className="p-4">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={pipelineData} margin={{ bottom: 60 }}>
+          <div className="p-3">
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 11 }} />
-                <YAxis />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" />
               </BarChart>
             </ResponsiveContainer>
@@ -93,17 +93,17 @@ export default function Home() {
 
         {/* Opportunity Pipeline by Stage - Value */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
           </div>
-          <div className="p-4">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={pipelineData} margin={{ bottom: 60 }}>
+          <div className="p-3">
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 11 }} />
-                <YAxis />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" />
               </BarChart>
             </ResponsiveContainer>
@@ -112,11 +112,11 @@ export default function Home() {
 
         {/* Account Distribution by Industry */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-900 truncate">Top 10 Industries by Account Count</h2>
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Top 10 Industries by Account Count</h2>
           </div>
-          <div className="p-4">
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="p-3">
+            <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie
                   data={industryData}
@@ -140,26 +140,26 @@ export default function Home() {
 
         {/* Contact Summary Stats */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-base font-semibold text-gray-900 truncate">Contact Summary</h2>
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Contact Summary</h2>
           </div>
-          <div className="p-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-gray-50 p-4 text-center">
-                <p className="text-2xl font-bold" style={{ color: '#06a59a' }}>{contacts.length.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">Total Contacts</p>
+          <div className="p-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <p className="text-xl font-bold" style={{ color: '#06a59a' }}>{contacts.length.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">Total Contacts</p>
               </div>
-              <div className="rounded-lg bg-gray-50 p-4 text-center">
-                <p className="text-2xl font-bold" style={{ color: '#0176d3' }}>{contacts.filter(c => c.accountId).length.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">With Accounts</p>
+              <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <p className="text-xl font-bold" style={{ color: '#0176d3' }}>{contacts.filter(c => c.accountId).length.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">With Accounts</p>
               </div>
-              <div className="rounded-lg bg-gray-50 p-4 text-center">
-                <p className="text-2xl font-bold" style={{ color: '#9050e9' }}>{contacts.filter(c => c.email).length.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">With Email</p>
+              <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <p className="text-xl font-bold" style={{ color: '#9050e9' }}>{contacts.filter(c => c.email).length.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">With Email</p>
               </div>
-              <div className="rounded-lg bg-gray-50 p-4 text-center">
-                <p className="text-2xl font-bold" style={{ color: '#e16032' }}>{contacts.filter(c => c.phone).length.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mt-1">With Phone</p>
+              <div className="rounded-lg bg-gray-50 p-3 text-center">
+                <p className="text-xl font-bold" style={{ color: '#e16032' }}>{contacts.filter(c => c.phone).length.toLocaleString()}</p>
+                <p className="text-xs text-gray-500">With Phone</p>
               </div>
             </div>
           </div>
