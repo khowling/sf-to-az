@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fieldDefsApi, pageLayoutsApi } from '../api/client';
+import { fieldDefsApi, pageLayoutsApi, testDataApi } from '../api/client';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
 import type { ObjectType, FieldDefinition } from '../types';
@@ -10,18 +10,20 @@ const objectTypes: ObjectType[] = ['account', 'contact', 'opportunity'];
 export default function Settings() {
   const toast = useToast();
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<ObjectType>('account');
+  const [activeTab, setActiveTab] = useState<'fields' | 'data'>('fields');
+  const [activeObjectTab, setActiveObjectTab] = useState<ObjectType>('account');
   const [showFieldModal, setShowFieldModal] = useState(false);
   const [fieldForm, setFieldForm] = useState({ fieldName: '', label: '', fieldType: 'text' as FieldDefinition['fieldType'], required: false, options: '' });
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: fields = [] } = useQuery({ queryKey: ['fieldDefs', activeTab], queryFn: () => fieldDefsApi.list(activeTab) });
-  const { data: layout } = useQuery({ queryKey: ['pageLayout', activeTab], queryFn: () => pageLayoutsApi.get(activeTab) });
+  const { data: fields = [] } = useQuery({ queryKey: ['fieldDefs', activeObjectTab], queryFn: () => fieldDefsApi.list(activeObjectTab) });
+  const { data: layout } = useQuery({ queryKey: ['pageLayout', activeObjectTab], queryFn: () => pageLayoutsApi.get(activeObjectTab) });
 
   const layoutFields = layout?.sections?.[0]?.fields ?? fields.map((f) => f.fieldName);
 
   const createFieldMut = useMutation({
     mutationFn: () => fieldDefsApi.create({
-      objectType: activeTab,
+      objectType: activeObjectTab,
       fieldName: fieldForm.fieldName,
       label: fieldForm.label,
       fieldType: fieldForm.fieldType,
@@ -39,10 +41,29 @@ export default function Settings() {
   });
 
   const updateLayoutMut = useMutation({
-    mutationFn: (fieldNames: string[]) => pageLayoutsApi.update(activeTab, [{ title: 'Details', columns: 2, fields: fieldNames }]),
+    mutationFn: (fieldNames: string[]) => pageLayoutsApi.update(activeObjectTab, [{ title: 'Details', columns: 2, fields: fieldNames }]),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['pageLayout'] }); toast.success('Layout updated'); },
     onError: () => toast.error('Failed to update layout'),
   });
+
+  const handleGenerateTestData = async () => {
+    if (!confirm('This will generate 100,000 accounts, 200,000 contacts, and 1,000,000 opportunities. This may take several minutes. Continue?')) {
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      const result = await testDataApi.generate();
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['contacts'] });
+      qc.invalidateQueries({ queryKey: ['opportunities'] });
+      toast.success(`Test data generated: ${result.stats.accounts.toLocaleString()} accounts, ${result.stats.contacts.toLocaleString()} contacts, ${result.stats.opportunities.toLocaleString()} opportunities in ${result.stats.durationSeconds}s`);
+    } catch (error) {
+      toast.error(`Failed to generate test data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const resetForm = () => setFieldForm({ fieldName: '', label: '', fieldType: 'text', required: false, options: '' });
 
@@ -77,89 +98,127 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
       </div>
 
-      {/* Object type tabs */}
+      {/* Main tabs */}
       <div>
-        <div className="border-b border-gray-200 mb-4">
-          <nav className="flex gap-4">
-            {objectTypes.map((t) => (
-              <button
-                key={t}
-                onClick={() => setActiveTab(t)}
-                className={`pb-2 text-sm font-medium capitalize border-b-2 transition-colors ${activeTab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >{t}</button>
-            ))}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="flex gap-6">
+            <button onClick={() => setActiveTab('fields')} className={`pb-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'fields' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>Field Definitions &amp; Layouts</button>
+            <button onClick={() => setActiveTab('data')} className={`pb-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'data' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>Test Data Generation</button>
           </nav>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Field Definitions */}
-          <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-base font-semibold text-gray-900">Field Definitions</h2>
-              <button onClick={() => { setShowFieldModal(true); resetForm(); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Field</button>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {fields.map((f) => (
-                <div key={f.id} className="flex items-center justify-between px-6 py-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{f.label}</p>
-                    <p className="text-xs text-gray-500">{f.fieldName} · {f.fieldType}{f.required ? ' · required' : ''}</p>
+        <div>
+          {activeTab === 'fields' && (
+            <>
+              <div className="border-b border-gray-200 mb-4">
+                <nav className="flex gap-4">
+                  {objectTypes.map((t) => (
+                    <button key={t} onClick={() => setActiveObjectTab(t)} className={`pb-2 text-sm font-medium capitalize border-b-2 transition-colors ${activeObjectTab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>{t}</button>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {/* Field Definitions */}
+                <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-base font-semibold text-gray-900">Field Definitions</h2>
+                    <button onClick={() => { setShowFieldModal(true); resetForm(); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Field</button>
                   </div>
-                  <div>
-                    {f.isCustom && (
-                      <button onClick={() => { if (confirm(`Delete field "${f.label}"?`)) deleteFieldMut.mutate(f.id); }} className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
-                    )}
+                  <div className="divide-y divide-gray-100">
+                    {fields.map((f) => (
+                      <div key={f.id} className="flex items-center justify-between px-6 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{f.label}</p>
+                          <p className="text-xs text-gray-500">{f.fieldName} · {f.fieldType}{f.required ? ' · required' : ''}</p>
+                        </div>
+                        <div>
+                          {f.isCustom && (
+                            <button onClick={() => { if (confirm(`Delete field "${f.label}"?`)) deleteFieldMut.mutate(f.id); }} className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {fields.length === 0 && <div className="px-6 py-4 text-sm text-gray-400">No fields defined</div>}
                   </div>
                 </div>
-              ))}
-              {fields.length === 0 && (
-                <div className="px-6 py-4 text-sm text-gray-400">No fields defined</div>
-              )}
-            </div>
-          </div>
 
-          {/* Page Layout */}
-          <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-base font-semibold text-gray-900">Page Layout</h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {layoutFields.map((fn, i) => {
-                const fd = fields.find((f) => f.fieldName === fn);
-                return (
-                  <div key={fn} className="flex items-center justify-between px-6 py-3">
-                    <span className="text-sm text-gray-900">{fd?.label ?? fn}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => moveField(i, -1)} disabled={i === 0} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move up">
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
-                      </button>
-                      <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move down">
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
-                      </button>
-                      <button onClick={() => removeFromLayout(fn)} className="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 focus:outline-none" title="Remove">
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
-                      </button>
-                    </div>
+                {/* Page Layout */}
+                <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-base font-semibold text-gray-900">Page Layout</h2>
                   </div>
-                );
-              })}
-              {layoutFields.length === 0 && (
-                <div className="px-6 py-4 text-sm text-gray-400">No fields in layout</div>
-              )}
-            </div>
-            {fieldsNotInLayout.length > 0 && (
-              <div className="border-t border-gray-200 px-6 py-4">
-                <p className="text-xs text-gray-500 mb-2">Available fields:</p>
-                <div className="flex flex-wrap gap-2">
-                  {fieldsNotInLayout.map((f) => (
-                    <button key={f.fieldName} onClick={() => addToLayout(f.fieldName)} className="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 focus:outline-none transition-colors">
-                      + {f.label}
-                    </button>
-                  ))}
+                  <div className="divide-y divide-gray-100">
+                    {layoutFields.map((fn, i) => {
+                      const fd = fields.find((f) => f.fieldName === fn);
+                      return (
+                        <div key={fn} className="flex items-center justify-between px-6 py-3">
+                          <span className="text-sm text-gray-900">{fd?.label ?? fn}</span>
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => moveField(i, -1)} disabled={i === 0} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move up">
+                              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
+                            </button>
+                            <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move down">
+                              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
+                            </button>
+                            <button onClick={() => removeFromLayout(fn)} className="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 focus:outline-none" title="Remove">
+                              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {layoutFields.length === 0 && <div className="px-6 py-4 text-sm text-gray-400">No fields in layout</div>}
+                  </div>
+                  {fieldsNotInLayout.length > 0 && (
+                    <div className="border-t border-gray-200 px-6 py-4">
+                      <p className="text-xs text-gray-500 mb-2">Available fields:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {fieldsNotInLayout.map((f) => (
+                          <button key={f.fieldName} onClick={() => addToLayout(f.fieldName)} className="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 focus:outline-none transition-colors">+ {f.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+            </>
+          )}
+
+          {activeTab === 'data' && (
+            <div className="mt-4">
+              <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-base font-semibold text-gray-900">Generate Test CRM Data</h2>
+                  <p className="text-sm text-gray-500 mt-1">Populate the application with realistic test data for demonstration and analysis</p>
+                </div>
+                <div className="px-6 py-6">
+                  <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 mb-6">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">What will be generated:</h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+                      <li><strong>100,000 Accounts</strong> — With realistic company names, industries, and contact information</li>
+                      <li><strong>200,000 Contacts</strong> — Linked to accounts with realistic names and email addresses</li>
+                      <li><strong>1,000,000 Opportunities</strong> — With various stages, amounts, and close dates</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-6 flex items-start gap-3" role="alert">
+                    <svg className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></svg>
+                    <p className="text-sm text-amber-800">This process may take several minutes to complete. Please do not close this page.</p>
+                  </div>
+                  <div className="text-center">
+                    <button onClick={handleGenerateTestData} disabled={isGenerating} className="inline-flex items-center justify-center min-w-[12rem] rounded-md bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                      {isGenerating ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Generating...
+                        </>
+                      ) : 'Generate Test Data'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
