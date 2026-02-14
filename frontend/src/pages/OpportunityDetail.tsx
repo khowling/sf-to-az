@@ -250,7 +250,12 @@ export default function OpportunityDetail() {
                 <div key={f.fieldName}>
                   <p className="text-xs font-medium text-gray-500">{f.label}</p>
                   <div className="mt-1">
-                    {f.fieldName === 'stage' ? (
+                    {f.fieldName === 'accountId' && linkedAccount ? (
+                      <Link to={`/accounts/${linkedAccount.id}`} className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 border border-blue-200 px-2.5 py-1 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors no-underline">
+                        <svg className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+                        {linkedAccount.name}
+                      </Link>
+                    ) : f.fieldName === 'stage' ? (
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${stageClass}`}>{String(val)}</span>
                     ) : f.fieldType === 'boolean' ? (
                       <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-blue-600" />

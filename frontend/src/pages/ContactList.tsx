@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { contactsApi, fieldDefsApi } from '../api/client';
 import RecordTable from '../components/RecordTable';
 import Modal from '../components/Modal';
@@ -54,7 +54,12 @@ export default function ContactList() {
     { key: 'name', label: 'Name', render: (_: unknown, r: Record<string, unknown>) => `${r.firstName} ${r.lastName}` },
     { key: 'email', label: 'Email' },
     { key: 'phone', label: 'Phone' },
-    { key: 'accountName', label: 'Account' },
+    { key: 'accountName', label: 'Account', render: (_: unknown, r: Record<string, unknown>) => r.accountName && r.accountId ? (
+      <Link to={`/accounts/${r.accountId}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 rounded bg-blue-50 border border-blue-200 px-2 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100 no-underline">
+        <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+        {String(r.accountName)}
+      </Link>
+    ) : '—' },
   ];
 
   if (isLoading) return <p className="text-gray-400">Loading…</p>;
