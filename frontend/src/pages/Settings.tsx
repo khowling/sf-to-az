@@ -16,6 +16,9 @@ export default function Settings() {
   const [fieldForm, setFieldForm] = useState({ fieldName: '', label: '', fieldType: 'text' as FieldDefinition['fieldType'], required: false, options: '' });
   const [isGenerating, setIsGenerating] = useState(false);
   const [dataCounts, setDataCounts] = useState({ accounts: 100000, contacts: 200000, opportunities: 1000000 });
+  const [selectedTheme, setSelectedTheme] = useState('Mixed (All Industries)');
+
+  const { data: themes = [] } = useQuery({ queryKey: ['testDataThemes'], queryFn: testDataApi.themes });
 
   const { data: fields = [] } = useQuery({ queryKey: ['fieldDefs', activeObjectTab], queryFn: () => fieldDefsApi.list(activeObjectTab) });
   const { data: layout } = useQuery({ queryKey: ['pageLayout', activeObjectTab], queryFn: () => pageLayoutsApi.get(activeObjectTab) });
@@ -54,7 +57,7 @@ export default function Settings() {
     
     setIsGenerating(true);
     try {
-      const result = await testDataApi.generate(dataCounts);
+      const result = await testDataApi.generate({ ...dataCounts, theme: selectedTheme });
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['contacts'] });
       qc.invalidateQueries({ queryKey: ['opportunities'] });
@@ -190,10 +193,26 @@ export default function Settings() {
             <div className="mt-4">
               <div className="rounded-lg bg-white shadow-sm border border-gray-200">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-base font-semibold text-gray-900">Generate Test CRM Data</h2>
-                  <p className="text-sm text-gray-500 mt-1">Populate the application with realistic test data for demonstration and analysis</p>
+                  <div className="flex items-center gap-2">
+                    <svg className="h-5 w-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    <h2 className="text-base font-semibold text-gray-900">AI-Powered Test Data Generator</h2>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Generate realistic, industry-themed CRM data using AI-curated seed datasets</p>
                 </div>
                 <div className="px-6 py-6">
+                  {/* Industry Theme */}
+                  <div className="rounded-lg bg-purple-50 border border-purple-200 p-4 mb-6">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
+                      <svg className="h-4 w-4 text-purple-600" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/></svg>
+                      Industry Theme
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-3">Choose a theme to generate data with industry-specific company names, deals, and terminology</p>
+                    <select value={selectedTheme} onChange={(e) => setSelectedTheme(e.target.value)} className="w-full rounded-md border border-purple-300 bg-white px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500">
+                      {themes.map((t) => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Record counts */}
                   <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 mb-6">
                     <h3 className="text-sm font-semibold text-gray-900 mb-3">Number of records to generate:</h3>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

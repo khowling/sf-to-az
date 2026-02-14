@@ -58,5 +58,6 @@ export const pageLayoutsApi = {
 
 // ─── Test Data Generation ───────────────────────────────
 export const testDataApi = {
-  generate: (counts?: { accounts?: number; contacts?: number; opportunities?: number }) => request<{ success: boolean; message: string; stats: { accounts: number; contacts: number; opportunities: number; durationSeconds: number } }>('/test-data/generate', { method: 'POST', body: JSON.stringify(counts ?? {}), headers: { 'Content-Type': 'application/json' } }),
+  themes: () => request<string[]>('/test-data/themes'),
+  generate: (params?: { accounts?: number; contacts?: number; opportunities?: number; theme?: string }) => request<{ success: boolean; message: string; stats: { accounts: number; contacts: number; opportunities: number; durationSeconds: number } }>('/test-data/generate', { method: 'POST', body: JSON.stringify(params ?? {}), headers: { 'Content-Type': 'application/json' } }),
 };
