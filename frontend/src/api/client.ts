@@ -30,6 +30,7 @@ export const accountsApi = {
     if (filters?.country) params.set('country', filters.country);
     return request<PaginatedResponse<Account>>(`/accounts?${params}`);
   },
+  stats: () => request<{ industry: string | null; count: number }[]>('/accounts/stats'),
   distinctValues: () => request<{ industries: string[]; countries: string[] }>('/accounts/distinct-values'),
   get: (id: string) => request<Account>(`/accounts/${id}`),
   create: (data: Partial<Account>) => request<Account>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
@@ -56,6 +57,7 @@ export const opportunitiesApi = {
     if (filters?.closeDateRange) params.set('closeDateRange', filters.closeDateRange);
     return request<PaginatedResponse<Opportunity>>(`/opportunities?${params}`);
   },
+  stats: () => request<{ stage: string; count: number; value: string }[]>('/opportunities/stats'),
   get: (id: string) => request<Opportunity>(`/opportunities/${id}`),
   create: (data: Partial<Opportunity>) => request<Opportunity>('/opportunities', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Opportunity>) => request<Opportunity>(`/opportunities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

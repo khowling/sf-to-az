@@ -36,6 +36,15 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
+// GET /api/accounts/stats — aggregated counts by industry
+router.get('/stats', async (_req: Request, res: Response) => {
+  const rows = await db.select({
+    industry: accounts.industry,
+    count: count(),
+  }).from(accounts).groupBy(accounts.industry).orderBy(accounts.industry);
+  res.json(rows);
+});
+
 // GET /api/accounts/distinct-values
 router.get('/distinct-values', async (req, res) => {
   const [industries, countries] = await Promise.all([

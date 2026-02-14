@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { opportunities, accounts } from '../db/schema.js';
-import { eq, count, and, gte, lte, lt, notInArray } from 'drizzle-orm';
+import { eq, count, and, gte, lte, lt, notInArray, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -13,6 +13,16 @@ const opportunitySchema = z.object({
   stage: z.string().min(1).default('Prospecting'),
   closeDate: z.string().optional().nullable(),
   customFields: z.record(z.string(), z.any()).optional(),
+});
+
+// GET /api/opportunities/stats — aggregated counts/values by stage
+router.get('/stats', async (_req: Request, res: Response) => {
+  const rows = await db.select({
+    stage: opportunities.stage,
+    count: count(),
+    value: sql<string>`coalesce(sum(${opportunities.amount}), 0)`,
+  }).from(opportunities).groupBy(opportunities.stage);
+  res.json(rows);
 });
 
 // GET /api/opportunities

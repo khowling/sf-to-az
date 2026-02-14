@@ -21,29 +21,23 @@ function StatCard({ label, count, subtitle, to, color }: { label: string; count:
 
 export default function Home() {
   const navigate = useNavigate();
-  const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list(1, 500) });
-  const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list(1, 500) });
-  const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list(1, 500) });
+  const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list(1, 1) });
+  const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list(1, 1) });
+  const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list(1, 1) });
+  const { data: oppStats = [] } = useQuery({ queryKey: ['opportunities', 'stats'], queryFn: () => opportunitiesApi.stats() });
+  const { data: accountStats = [] } = useQuery({ queryKey: ['accounts', 'stats'], queryFn: () => accountsApi.stats() });
 
-  const accounts = accountsRes?.data ?? [];
   const contacts = contactsRes?.data ?? [];
-  const opps = oppsRes?.data ?? [];
   const accountsTotal = accountsRes?.total ?? 0;
   const contactsTotal = contactsRes?.total ?? 0;
   const oppsTotal = oppsRes?.total ?? 0;
 
-  const pipeline = opps.reduce((sum, o) => sum + (parseFloat(o.amount ?? '0') || 0), 0);
+  const pipeline = oppStats.reduce((sum, s) => sum + (parseFloat(s.value) || 0), 0);
   const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-  // Opportunity Pipeline by Stage
+  // Opportunity Pipeline by Stage (from aggregated stats)
   const stageOrder = ['Prospecting', 'Qualification', 'Needs Analysis', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
-  const oppsByStage = opps.reduce((acc, opp) => {
-    const stage = opp.stage || 'Unknown';
-    if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
-    acc[stage].count++;
-    acc[stage].value += parseFloat(opp.amount ?? '0') || 0;
-    return acc;
-  }, {} as Record<string, { count: number; value: number }>);
+  const oppsByStage = Object.fromEntries(oppStats.map(s => [s.stage, { count: s.count, value: parseFloat(s.value) || 0 }]));
 
   const pipelineData = stageOrder.map(stage => ({
     stage,
@@ -51,15 +45,9 @@ export default function Home() {
     value: oppsByStage[stage]?.value || 0,
   }));
 
-  // Account Distribution by Industry
-  const accountsByIndustry = accounts.reduce((acc, account) => {
-    const industry = account.industry || 'Unknown';
-    acc[industry] = (acc[industry] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const industryData = Object.entries(accountsByIndustry)
-    .map(([name, value]) => ({ name, value }))
+  // Account Distribution by Industry (from aggregated stats)
+  const industryData = accountStats
+    .map(s => ({ name: s.industry || 'Unknown', value: s.count }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
 
