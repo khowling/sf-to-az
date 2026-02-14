@@ -5,12 +5,59 @@ import { accounts, contacts, opportunities } from '../db/schema.js';
 const router = Router();
 
 // Helper to generate random data
-const industries = ['Technology', 'Finance', 'Healthcare', 'Manufacturing', 'Retail', 'Education', 'Consulting', 'Real Estate', 'Energy', 'Transportation'];
+const industries = [
+  'Software & Cloud Computing', 'Investment Banking', 'Pharmaceuticals', 'Aerospace & Defense',
+  'Commercial Real Estate', 'Digital Media & Entertainment', 'Cybersecurity', 'Renewable Energy',
+  'Medical Devices', 'Supply Chain & Logistics', 'Insurance', 'Telecommunications', 'Automotive',
+  'Food & Beverage', 'Professional Services', 'Biotechnology', 'E-Commerce',
+  'Construction & Engineering', 'Hospitality & Tourism', 'Legal Services',
+  'Agriculture & AgTech', 'Mining & Metals', 'Shipping & Maritime', 'Fashion & Apparel',
+  'Consumer Electronics',
+];
 const stages = ['Prospecting', 'Qualification', 'Needs Analysis', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
-const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen'];
-const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
-const companyPrefixes = ['Global', 'National', 'United', 'Premier', 'Advanced', 'Dynamic', 'Strategic', 'Innovative', 'Professional', 'Elite'];
-const companySuffixes = ['Solutions', 'Systems', 'Technologies', 'Industries', 'Group', 'Corp', 'Enterprises', 'Partners', 'Services', 'Associates'];
+const firstNames = [
+  'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William',
+  'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah',
+  'Charles', 'Karen', 'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason',
+  'Isabella', 'Logan', 'Mia', 'Lucas', 'Amelia', 'Aiden', 'Harper', 'Elijah', 'Evelyn', 'Caden',
+  'Abigail', 'Jackson', 'Emily', 'Sebastian', 'Ella', 'Mateo', 'Scarlett', 'Henry', 'Grace',
+  'Owen', 'Chloe', 'Alexander', 'Priya', 'Wei', 'Yuki', 'Carlos', 'Fatima', 'Ahmed', 'Mei',
+  'Raj', 'Aisha', 'Dmitri', 'Ingrid', 'Kwame', 'Chiara', 'Sven', 'Yara', 'Jin', 'Aaliyah',
+  'Kenji', 'Nadia', 'Diego',
+];
+const lastNames = [
+  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez',
+  'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore',
+  'Jackson', 'Martin', 'Chen', 'Patel', 'Kim', 'Nakamura', 'Mueller', 'O\'Brien', 'Svensson',
+  'Costa', 'Dubois', 'Ivanov', 'Singh', 'Tanaka', 'Fernandez', 'Zhang', 'Okafor', 'Berg',
+  'Reeves', 'Sharma', 'Novak', 'Ali', 'Park', 'Larsson', 'Rossi', 'Yamamoto', 'Santos', 'Weber',
+  'Fischer', 'Johansson', 'Moreau', 'Gupta', 'Lee', 'Thompson', 'White', 'Harris', 'Clark',
+  'Lewis', 'Walker', 'Hall', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Green', 'Baker',
+  'Adams', 'Nelson', 'Hill', 'Ramirez', 'Campbell',
+];
+const companyPrefixes = [
+  'Apex', 'Vertex', 'Pinnacle', 'Quantum', 'Meridian', 'Catalyst', 'Nexus', 'Horizon',
+  'Vanguard', 'Zenith', 'Atlas', 'Titan', 'Nova', 'Stellar', 'Cipher', 'Prism', 'Ascend',
+  'Forge', 'Beacon', 'Crest', 'Pulse', 'Summit', 'Bridge', 'Core', 'Flux', 'Arc', 'Orion',
+  'Vector', 'Helix', 'Omega',
+];
+const companySuffixes = [
+  'Solutions', 'Systems', 'Technologies', 'Industries', 'Group', 'Corp', 'Enterprises',
+  'Partners', 'Services', 'Associates', 'Labs', 'Dynamics', 'Ventures', 'Analytics', 'Consulting',
+  'Digital', 'Capital', 'Innovations', 'Networks', 'Robotics', 'Biotech', 'Logistics', 'Media',
+  'AI', 'Cloud', 'Health', 'Security', 'Platforms', 'Interactive', 'Automation',
+];
+const opportunityNames = [
+  'Enterprise License Agreement', 'Cloud Migration Project', 'Digital Transformation Initiative',
+  'Annual Maintenance Renewal', 'Platform Upgrade', 'Security Assessment', 'Data Analytics Suite',
+  'Custom Integration', 'Managed Services Contract', 'Infrastructure Modernization',
+  'Compliance Solution', 'Training Program', 'Proof of Concept', 'Strategic Partnership',
+  'IoT Deployment', 'AI Implementation', 'DevOps Toolchain', 'ERP Migration',
+  'CRM Implementation', 'Supply Chain Optimization', 'Cybersecurity Audit',
+  'Marketing Automation', 'HR Platform Rollout', 'Financial Systems Upgrade',
+  'Network Expansion', 'Mobile App Development', 'API Integration', 'Disaster Recovery Plan',
+  'Sustainability Initiative', 'Workforce Analytics',
+];
 
 function randomElement<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -55,22 +102,27 @@ router.post('/generate', async (req: Request, res: Response) => {
     // Generate accounts in batches
     console.log('Generating accounts...');
     const accountIds: string[] = [];
+    const accountNames: string[] = [];
     for (let i = 0; i < accountCount; i += batchSize) {
       const batch = [];
+      const batchNames: string[] = [];
       const currentBatchSize = Math.min(batchSize, accountCount - i);
       
       for (let j = 0; j < currentBatchSize; j++) {
+        const accountName = `${generateAccountName()} ${i + j + 1}`;
+        batchNames.push(accountName);
         batch.push({
-          name: `${generateAccountName()} ${i + j + 1}`,
+          name: accountName,
           industry: randomElement(industries),
           phone: generatePhone(),
-          website: `https://www.company${i + j + 1}.com`,
+          website: `https://www.${accountName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
           customFields: {},
         });
       }
       
       const inserted = await db.insert(accounts).values(batch).returning({ id: accounts.id });
       accountIds.push(...inserted.map(r => r.id));
+      accountNames.push(...batchNames);
       
       if ((i + batchSize) % 10000 === 0 || i + batchSize >= accountCount) {
         console.log(`  Accounts: ${Math.min(i + batchSize, accountCount)}/${accountCount}`);
@@ -117,10 +169,11 @@ router.post('/generate', async (req: Request, res: Response) => {
       for (let j = 0; j < currentBatchSize; j++) {
         const stage = randomElement(stages);
         const amount = randomInt(5000, 500000);
+        const accountIndex = Math.floor(Math.random() * accountIds.length);
         
         batch.push({
-          name: `Opportunity ${i + j + 1}`,
-          accountId: randomElement(accountIds),
+          name: `${randomElement(opportunityNames)} - ${accountNames[accountIndex]}`,
+          accountId: accountIds[accountIndex],
           amount: amount.toString(),
           stage,
           closeDate: generateCloseDate(),
