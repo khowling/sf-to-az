@@ -47,6 +47,9 @@ export default function Home() {
     value: oppsByStage[stage]?.value || 0,
   }));
 
+  const totalOppCount = pipelineData.reduce((s, d) => s + d.count, 0);
+  const totalOppValue = pipelineData.reduce((s, d) => s + d.value, 0);
+
   // Account Distribution by Industry (from aggregated stats)
   const industryData = accountStats
     .map(s => ({ name: s.industry || 'Unknown', value: s.count }))
@@ -90,7 +93,10 @@ export default function Home() {
         {/* Opportunity Pipeline by Stage - Count */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 overflow-visible">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Opportunity Pipeline by Stage</h2>
+              <p className="text-xs text-gray-500">{totalOppCount.toLocaleString()} total</p>
+            </div>
             <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
               className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
               <option value="">All Time</option>
@@ -115,7 +121,10 @@ export default function Home() {
         {/* Opportunity Pipeline by Stage - Value */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200 overflow-visible">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Opportunity Value by Stage</h2>
+              <p className="text-xs text-gray-500">{fmt.format(totalOppValue)} total</p>
+            </div>
             <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
               className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
               <option value="">All Time</option>
@@ -204,7 +213,10 @@ export default function Home() {
         {/* Opportunity Funnel */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Funnel</h2>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">Opportunity Funnel</h2>
+              <p className="text-xs text-gray-500">{fmt.format(funnelData.reduce((s, d) => s + d.value, 0))} total</p>
+            </div>
             <select value={oppPeriod} onChange={e => setOppPeriod(e.target.value)}
               className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600 focus:border-blue-300 focus:outline-none">
               <option value="">All Time</option>
