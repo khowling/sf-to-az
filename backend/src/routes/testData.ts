@@ -92,7 +92,77 @@ function generateEmail(firstName: string, lastName: string, accountName: string)
 
 function generateCloseDate(): string {
   const today = new Date();
-  const daysOffset = randomInt(-180, 365); // -6 months to +1 year
+  // Weighted distribution: more opportunities close in the near future
+  // 20% in the past (closed), 30% this month/quarter, 50% spread over next year
+  const r = Math.random();
+  let daysOffset: number;
+  if (r < 0.15) {
+    daysOffset = randomInt(-365, -90); // old closed deals
+  } else if (r < 0.3) {
+    daysOffset = randomInt(-90, -1); // recently closed
+  } else if (r < 0.5) {
+    daysOffset = randomInt(0, 30); // this month
+  } else if (r < 0.7) {
+    daysOffset = randomInt(31, 90); // this quarter
+  } else {
+    daysOffset = randomInt(91, 365); // rest of year
+  }
+  const date = new Date(today.getTime() + daysOffset * 24 * 60 * 60 * 1000);
+  return date.toISOString().split('T')[0];
+}
+
+// Weighted stage selection — realistic pipeline: lots of early stage, fewer closed
+function weightedStage(): string {
+  const r = Math.random();
+  if (r < 0.25) return 'Prospecting';
+  if (r < 0.42) return 'Qualification';
+  if (r < 0.55) return 'Needs Analysis';
+  if (r < 0.68) return 'Proposal';
+  if (r < 0.78) return 'Negotiation';
+  if (r < 0.90) return 'Closed Won';
+  return 'Closed Lost';
+}
+
+// Realistic amount based on stage — later stages tend to be larger/more defined
+function generateAmount(stage: string): number {
+  switch (stage) {
+    case 'Prospecting': return randomInt(1000, 100000);
+    case 'Qualification': return randomInt(5000, 200000);
+    case 'Needs Analysis': return randomInt(10000, 300000);
+    case 'Proposal': return randomInt(25000, 500000);
+    case 'Negotiation': return randomInt(50000, 750000);
+    case 'Closed Won': return randomInt(10000, 1000000);
+    case 'Closed Lost': return randomInt(5000, 500000);
+    default: return randomInt(5000, 200000);
+  }
+}
+
+// Close date that correlates with stage
+function generateCloseDateForStage(stage: string): string {
+  const today = new Date();
+  let daysOffset: number;
+  switch (stage) {
+    case 'Closed Won':
+    case 'Closed Lost':
+      daysOffset = randomInt(-365, -1); // already closed
+      break;
+    case 'Negotiation':
+      daysOffset = randomInt(-7, 30); // closing soon
+      break;
+    case 'Proposal':
+      daysOffset = randomInt(7, 60); // next couple months
+      break;
+    case 'Needs Analysis':
+      daysOffset = randomInt(14, 120);
+      break;
+    case 'Qualification':
+      daysOffset = randomInt(30, 180);
+      break;
+    case 'Prospecting':
+    default:
+      daysOffset = randomInt(30, 365); // far out
+      break;
+  }
   const date = new Date(today.getTime() + daysOffset * 24 * 60 * 60 * 1000);
   return date.toISOString().split('T')[0];
 }
@@ -190,8 +260,8 @@ router.post('/generate', async (req: Request, res: Response) => {
       const currentBatchSize = Math.min(batchSize, opportunityCount - i);
       
       for (let j = 0; j < currentBatchSize; j++) {
-        const stage = randomElement(stages);
-        const amount = randomInt(5000, 500000);
+        const stage = weightedStage();
+        const amount = generateAmount(stage);
         const accountIndex = Math.floor(Math.random() * accountIds.length);
         
         batch.push({
@@ -199,7 +269,7 @@ router.post('/generate', async (req: Request, res: Response) => {
           accountId: accountIds[accountIndex],
           amount: amount.toString(),
           stage,
-          closeDate: generateCloseDate(),
+          closeDate: generateCloseDateForStage(stage),
           customFields: {},
         });
       }
@@ -227,6 +297,28 @@ router.post('/generate', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Test data generation failed:', error);
     res.status(500).json({ error: 'Failed to generate test data', details: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// DELETE all data
+router.delete('/all', async (req, res) => {
+  const password = req.query.password as string || req.body?.password;
+  const expectedPassword = process.env.TEST_DATA_PASSWORD || 'oldgits';
+  
+  if (password !== expectedPassword) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
+
+  try {
+    // Delete in order to respect foreign keys
+    await db.delete(opportunities);
+    await db.delete(contacts);
+    await db.delete(accounts);
+    
+    res.json({ success: true, message: 'All data deleted successfully' });
+  } catch (error) {
+    console.error('Data deletion failed:', error);
+    res.status(500).json({ error: 'Failed to delete data', details: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 

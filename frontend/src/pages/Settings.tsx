@@ -84,6 +84,22 @@ export default function Settings() {
     } finally { setIsGenerating(false); }
   };
 
+  const [isDeleting, setIsDeleting] = useState(false);
+  const handleDeleteAllData = async () => {
+    if (!testDataPassword) { toast.error('Password is required'); return; }
+    if (!confirm('⚠️ This will permanently delete ALL accounts, contacts, and opportunities. This cannot be undone. Continue?')) return;
+    setIsDeleting(true);
+    try {
+      await testDataApi.deleteAll(testDataPassword);
+      qc.invalidateQueries({ queryKey: ['accounts'] });
+      qc.invalidateQueries({ queryKey: ['contacts'] });
+      qc.invalidateQueries({ queryKey: ['opportunities'] });
+      toast.success('All data deleted successfully');
+    } catch (error) {
+      toast.error(`Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally { setIsDeleting(false); }
+  };
+
   const resetForm = () => setFieldForm({ fieldName: '', label: '', fieldType: 'text', required: false, options: '' });
 
   const handleCreateField = () => {
@@ -347,7 +363,7 @@ export default function Settings() {
                   </label>
                   <input type="password" value={testDataPassword} onChange={e => setTestDataPassword(e.target.value)} placeholder="Enter password to generate data" className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
-                <div className="text-center">
+                <div className="flex items-center justify-center gap-4">
                   <button onClick={handleGenerateTestData} disabled={isGenerating} className="inline-flex items-center justify-center min-w-[12rem] rounded-md bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isGenerating ? (
                       <>
@@ -355,6 +371,14 @@ export default function Settings() {
                         Generating...
                       </>
                     ) : 'Generate Test Data'}
+                  </button>
+                  <button onClick={handleDeleteAllData} disabled={isDeleting} className="inline-flex items-center justify-center min-w-[12rem] rounded-md bg-red-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isDeleting ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        Deleting...
+                      </>
+                    ) : 'Delete All Data'}
                   </button>
                 </div>
               </div>
