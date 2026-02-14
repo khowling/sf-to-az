@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      force_infra:
+        description: 'Force infrastructure deployment'
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -15,12 +20,32 @@ env:
   APP_NAME: mycrm
 
 jobs:
-  build-and-deploy:
+  # Detect what changed to decide if infra needs deploying
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            infra:
+              - 'infra/**'
 
+  # Only runs when infra/ files changed, on first deploy, or manual trigger
+  infra:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.infra == 'true' || github.event.inputs.force_infra == 'true'
+    outputs:
+      acr_login_server: ${{ steps.deploy.outputs.ACR_LOGIN_SERVER }}
+      acr_name: ${{ steps.deploy.outputs.ACR_NAME }}
+      app_url: ${{ steps.deploy.outputs.APP_URL }}
+      pg_fqdn: ${{ steps.deploy.outputs.PG_FQDN }}
+    steps:
+      - uses: actions/checkout@v4
       - name: Log in to Azure
         uses: azure/login@v2
         with:
@@ -29,22 +54,14 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Create resource group
-        run: |
-          az group create \
-            --name ${{ env.RESOURCE_GROUP }} \
-            --location ${{ env.LOCATION }} \
-            --output none
+        run: az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }} --output none
 
-      # Deploy infrastructure (first run creates ACR + PostgreSQL + Container App environment)
-      # Use a placeholder image on first run; the real image is deployed in the update step
       - name: Deploy infrastructure
-        id: infra
+        id: deploy
         run: |
-          # Check if ACR already exists to get image name
           EXISTING_ACR=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].loginServer" -o tsv 2>/dev/null || echo "")
-
           if [ -n "$EXISTING_ACR" ]; then
-            IMAGE="${EXISTING_ACR}/${{ env.APP_NAME }}:${{ github.sha }}"
+            IMAGE="${EXISTING_ACR}/${{ env.APP_NAME }}:latest"
           else
             IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
           fi
@@ -52,40 +69,69 @@ jobs:
           RESULT=$(az deployment group create \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --template-file infra/main.bicep \
-            --parameters \
-              appName=${{ env.APP_NAME }} \
-              containerImage="$IMAGE" \
-              dbAdminPassword=${{ secrets.DB_ADMIN_PASSWORD }} \
-            --query 'properties.outputs' \
-            --output json)
+            --parameters appName=${{ env.APP_NAME }} containerImage="$IMAGE" dbAdminPassword=${{ secrets.DB_ADMIN_PASSWORD }} \
+            --query 'properties.outputs' --output json)
 
           echo "ACR_LOGIN_SERVER=$(echo $RESULT | jq -r '.acrLoginServer.value')" >> $GITHUB_OUTPUT
           echo "ACR_NAME=$(echo $RESULT | jq -r '.acrName.value')" >> $GITHUB_OUTPUT
           echo "APP_URL=$(echo $RESULT | jq -r '.appUrl.value')" >> $GITHUB_OUTPUT
           echo "PG_FQDN=$(echo $RESULT | jq -r '.pgServerFqdn.value')" >> $GITHUB_OUTPUT
 
-      # Build and push container image
-      - name: Log in to ACR
+  # Always runs — builds image and deploys container
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [changes, infra]
+    if: always() && !failure() && !cancelled()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Resolve ACR details — from infra job output or by querying Azure
+      - name: Get ACR details
+        id: acr
         run: |
-          az acr login --name ${{ steps.infra.outputs.ACR_NAME }}
+          ACR_NAME="${{ needs.infra.outputs.acr_name }}"
+          ACR_LOGIN_SERVER="${{ needs.infra.outputs.acr_login_server }}"
+          PG_FQDN="${{ needs.infra.outputs.pg_fqdn }}"
+          APP_URL="${{ needs.infra.outputs.app_url }}"
+
+          if [ -z "$ACR_NAME" ]; then
+            ACR_NAME=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].name" -o tsv)
+            ACR_LOGIN_SERVER=$(az acr list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].loginServer" -o tsv)
+            PG_FQDN=$(az postgres flexible-server list --resource-group ${{ env.RESOURCE_GROUP }} --query "[0].fullyQualifiedDomainName" -o tsv)
+            APP_URL=$(az containerapp show --name ${{ env.APP_NAME }}-app --resource-group ${{ env.RESOURCE_GROUP }} --query "properties.configuration.ingress.fqdn" -o tsv)
+            APP_URL="https://${APP_URL}"
+          fi
+
+          echo "ACR_NAME=$ACR_NAME" >> $GITHUB_OUTPUT
+          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
+          echo "PG_FQDN=$PG_FQDN" >> $GITHUB_OUTPUT
+          echo "APP_URL=$APP_URL" >> $GITHUB_OUTPUT
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ steps.acr.outputs.ACR_NAME }}
 
       - name: Build and push image
         run: |
-          IMAGE="${{ steps.infra.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
-          docker build -t "$IMAGE" .
-          docker push "$IMAGE"
+          IMAGE="${{ steps.acr.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}"
+          docker build -t "${IMAGE}:${{ github.sha }}" -t "${IMAGE}:latest" .
+          docker push "${IMAGE}:${{ github.sha }}"
+          docker push "${IMAGE}:latest"
 
-      # Update Container App with the real image
       - name: Deploy container
         run: |
-          IMAGE="${{ steps.infra.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
+          IMAGE="${{ steps.acr.outputs.ACR_LOGIN_SERVER }}/${{ env.APP_NAME }}:${{ github.sha }}"
           az containerapp update \
             --name ${{ env.APP_NAME }}-app \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --image "$IMAGE" \
             --output none
 
-      # Run database migrations
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -97,8 +143,7 @@ jobs:
           npm ci
           npx drizzle-kit push
         env:
-          DATABASE_URL: postgres://crmadmin:${{ secrets.DB_ADMIN_PASSWORD }}@${{ steps.infra.outputs.PG_FQDN }}:5432/sf_crm?sslmode=require
+          DATABASE_URL: postgres://crmadmin:${{ secrets.DB_ADMIN_PASSWORD }}@${{ steps.acr.outputs.PG_FQDN }}:5432/sf_crm?sslmode=require
 
       - name: Print app URL
-        run: |
-          echo "✅ Deployed to: ${{ steps.infra.outputs.APP_URL }}"
+        run: echo "✅ Deployed to ${{ steps.acr.outputs.APP_URL }}"
