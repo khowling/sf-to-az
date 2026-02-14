@@ -27,6 +27,7 @@ export default function Settings() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [dataCounts, setDataCounts] = useState({ accounts: 100000, contacts: 200000, opportunities: 1000000 });
   const [selectedTheme, setSelectedTheme] = useState('Mixed (All Industries)');
+  const [testDataPassword, setTestDataPassword] = useState('');
   const [dragData, setDragData] = useState<{ fieldName: string; fromSection?: number } | null>(null);
 
   const isObjectView = objectTypes.some(o => o.key === activeSidebar);
@@ -70,9 +71,10 @@ export default function Settings() {
 
   const handleGenerateTestData = async () => {
     if (!confirm(`This will generate ${dataCounts.accounts.toLocaleString()} accounts, ${dataCounts.contacts.toLocaleString()} contacts, and ${dataCounts.opportunities.toLocaleString()} opportunities. This may take several minutes. Continue?`)) return;
+    if (!testDataPassword) { toast.error('Password is required'); return; }
     setIsGenerating(true);
     try {
-      const result = await testDataApi.generate({ ...dataCounts, theme: selectedTheme });
+      const result = await testDataApi.generate({ ...dataCounts, theme: selectedTheme, password: testDataPassword });
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['contacts'] });
       qc.invalidateQueries({ queryKey: ['opportunities'] });
@@ -335,6 +337,15 @@ export default function Settings() {
                 <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-6 flex items-start gap-3" role="alert">
                   <svg className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></svg>
                   <p className="text-sm text-amber-800">This process may take several minutes to complete. Please do not close this page.</p>
+                </div>
+                <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 mb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <span className="flex items-center gap-1.5">
+                      <svg className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                      Password
+                    </span>
+                  </label>
+                  <input type="password" value={testDataPassword} onChange={e => setTestDataPassword(e.target.value)} placeholder="Enter password to generate data" className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
                 </div>
                 <div className="text-center">
                   <button onClick={handleGenerateTestData} disabled={isGenerating} className="inline-flex items-center justify-center min-w-[12rem] rounded-md bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">

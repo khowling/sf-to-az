@@ -104,6 +104,11 @@ router.get('/themes', (_req: Request, res: Response) => {
 
 // POST /api/test-data/generate
 router.post('/generate', async (req: Request, res: Response) => {
+  // Password protection
+  const requiredPassword = process.env.TEST_DATA_PASSWORD || 'oldgits';
+  if (req.body?.password !== requiredPassword) {
+    return res.status(403).json({ error: 'Invalid password' });
+  }
   try {
     const startTime = Date.now();
     const batchSize = 1000;

@@ -161,6 +161,10 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
               name: 'NODE_ENV'
               value: 'production'
             }
+            {
+              name: 'TEST_DATA_PASSWORD'
+              value: 'oldgits'
+            }
           ]
         }
       ]
