@@ -42,7 +42,7 @@ export const contactsApi = {
 
 // ─── Opportunities ────────────────────────────────────────
 export const opportunitiesApi = {
-  list: (page = 1, limit = 500) => request<PaginatedResponse<Opportunity>>(`/opportunities?page=${page}&limit=${limit}`),
+  list: (page = 1, limit = 500, stage?: string) => request<PaginatedResponse<Opportunity>>(`/opportunities?page=${page}&limit=${limit}${stage ? `&stage=${encodeURIComponent(stage)}` : ''}`),
   get: (id: string) => request<Opportunity>(`/opportunities/${id}`),
   create: (data: Partial<Opportunity>) => request<Opportunity>('/opportunities', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Opportunity>) => request<Opportunity>(`/opportunities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

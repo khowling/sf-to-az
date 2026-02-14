@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { opportunities, accounts } from '../db/schema.js';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, and } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -20,6 +20,8 @@ router.get('/', async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
   const offset = (page - 1) * limit;
+  const stageFilter = req.query.stage as string | undefined;
+  const where = stageFilter ? eq(opportunities.stage, stageFilter) : undefined;
 
   const [rows, [{ total }]] = await Promise.all([
     db.select({
@@ -36,10 +38,11 @@ router.get('/', async (req: Request, res: Response) => {
     })
       .from(opportunities)
       .leftJoin(accounts, eq(opportunities.accountId, accounts.id))
+      .where(where)
       .orderBy(opportunities.name)
       .limit(limit)
       .offset(offset),
-    db.select({ total: count() }).from(opportunities),
+    db.select({ total: count() }).from(opportunities).where(where),
   ]);
 
   res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });

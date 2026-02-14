@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { opportunitiesApi, fieldDefsApi } from '../api/client';
 import RecordTable from '../components/RecordTable';
 import Modal from '../components/Modal';
@@ -18,6 +18,8 @@ const builtInFields: FieldDefinition[] = [
 
 export default function OpportunityList() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stageFilter = searchParams.get('stage') || undefined;
   const toast = useToast();
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +28,7 @@ export default function OpportunityList() {
 
   const [page, setPage] = useState(1);
 
-  const { data: response, isLoading } = useQuery({ queryKey: ['opportunities', page], queryFn: () => opportunitiesApi.list(page) });
+  const { data: response, isLoading } = useQuery({ queryKey: ['opportunities', page, stageFilter], queryFn: () => opportunitiesApi.list(page, 500, stageFilter) });
   const opps = response?.data ?? [];
   const totalPages = response?.totalPages ?? 1;
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'opportunity'], queryFn: () => fieldDefsApi.list('opportunity') });
@@ -68,7 +70,17 @@ export default function OpportunityList() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900">Opportunities</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Opportunities</h1>
+          {stageFilter && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 border border-purple-200 px-3 py-1 text-xs font-medium text-purple-700">
+              Stage: {stageFilter}
+              <button onClick={() => { setSearchParams({}); setPage(1); }} className="ml-1 text-purple-400 hover:text-purple-600">
+                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
+              </button>
+            </span>
+          )}
+        </div>
         <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           New
         </button>

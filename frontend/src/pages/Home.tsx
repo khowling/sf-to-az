@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -7,7 +7,7 @@ function StatCard({ label, count, subtitle, to, color }: { label: string; count:
   return (
     <Link to={to} className="block rounded-lg bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow no-underline">
       <div className="px-4 py-4 flex items-center gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white text-lg font-bold" style={{ backgroundColor: color }}>
+        <div className="flex min-w-[3rem] h-12 px-3 shrink-0 items-center justify-center rounded-full text-white text-sm font-bold" style={{ backgroundColor: color }}>
           {count.toLocaleString()}
         </div>
         <div>
@@ -20,6 +20,7 @@ function StatCard({ label, count, subtitle, to, color }: { label: string; count:
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list(1, 500) });
   const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list(1, 500) });
   const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list(1, 500) });
@@ -64,6 +65,12 @@ export default function Home() {
 
   const INDUSTRY_COLORS = ['#0176d3', '#06a59a', '#9050e9', '#e16032', '#54698d', '#16325c', '#0070d2', '#00a1e0', '#4bca81', '#ffb75d'];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleBarClick = (data: any) => {
+    const stage = data?.stage || data?.payload?.stage;
+    if (stage) navigate(`/opportunities?stage=${encodeURIComponent(stage)}`);
+  };
+
   return (
     <div>
       <div className="mb-4 rounded-lg bg-white px-5 py-3 shadow-sm border border-gray-200">
@@ -91,7 +98,7 @@ export default function Home() {
                 <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" />
+                <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" cursor="pointer" onClick={handleBarClick} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -109,7 +116,7 @@ export default function Home() {
                 <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
-                <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" />
+                <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" cursor="pointer" onClick={handleBarClick} />
               </BarChart>
             </ResponsiveContainer>
           </div>
