@@ -48,7 +48,6 @@ function StageProgress({ current }: { current: string }) {
           <div key={stage} className="flex items-center flex-1 min-w-0">
             <div
               className="flex-1 relative text-center transition-all min-h-8"
-              role="status"
               aria-label={`Stage ${i + 1} of ${stages.length}: ${stage}${isComplete ? ' - Complete' : isCurrent ? ' - Current' : ' - Incomplete'}`}
               style={{
                 padding: '0.5rem 0.75rem',
