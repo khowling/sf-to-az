@@ -92,10 +92,10 @@ export default function Home() {
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
           </div>
           <div className="p-3">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: -15, bottom: 50 }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} height={70} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                 <Tooltip />
                 <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" cursor="pointer" onClick={handleBarClick} radius={[3, 3, 0, 0]} />
@@ -110,10 +110,10 @@ export default function Home() {
             <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
           </div>
           <div className="p-3">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: -5, bottom: 50 }}>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} height={70} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
                 <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" cursor="pointer" onClick={handleBarClick} radius={[3, 3, 0, 0]} />
