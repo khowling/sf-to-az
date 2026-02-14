@@ -167,21 +167,21 @@ export default function Settings() {
 
   return (
     <div>
-      <div className="mb-4 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      <div className="mb-4 rounded-lg bg-white px-4 sm:px-6 py-3 sm:py-4 shadow-sm border border-gray-200">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Settings</h1>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         {/* Sidebar */}
-        <div className="w-52 shrink-0">
+        <div className="md:w-52 md:shrink-0">
           <div className="rounded-lg bg-white shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 border-b border-gray-200">
               <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Objects</h2>
             </div>
-            <nav className="py-1">
+            <nav className="py-1 flex md:flex-col overflow-x-auto md:overflow-x-visible">
               {sidebarItems.filter(i => i.type === 'object').map(item => (
                 <button key={item.key} onClick={() => setActiveSidebar(item.key)}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   {item.icon} {item.label}
                 </button>
               ))}
@@ -189,10 +189,10 @@ export default function Settings() {
             <div className="px-4 py-3 border-t border-b border-gray-200">
               <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tools</h2>
             </div>
-            <nav className="py-1">
+            <nav className="py-1 flex md:flex-col overflow-x-auto md:overflow-x-visible">
               {sidebarItems.filter(i => i.type === 'tool').map(item => (
                 <button key={item.key} onClick={() => setActiveSidebar(item.key)}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   {item.icon} {item.label}
                 </button>
               ))}
@@ -206,13 +206,13 @@ export default function Settings() {
             <div className="space-y-4">
               {/* Field Definitions */}
               <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-3 border-b border-gray-200">
                   <h2 className="text-base font-semibold text-gray-900 capitalize">{activeObjectType} Fields</h2>
                   <button onClick={() => { setShowFieldModal(true); resetForm(); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Field</button>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {fields.map(f => (
-                    <div key={f.id} className="flex items-center justify-between px-6 py-2.5">
+                    <div key={f.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-2.5">
                       <div className="flex items-center gap-3">
                         <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide ${f.isCustom ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}>
                           {f.isCustom ? 'Custom' : 'Standard'}
@@ -227,13 +227,13 @@ export default function Settings() {
                       )}
                     </div>
                   ))}
-                  {fields.length === 0 && <div className="px-6 py-4 text-sm text-gray-400">No fields defined</div>}
+                  {fields.length === 0 && <div className="px-4 sm:px-6 py-4 text-sm text-gray-400">No fields defined</div>}
                 </div>
               </div>
 
               {/* Page Layout */}
               <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-3 border-b border-gray-200">
                   <h2 className="text-base font-semibold text-gray-900">Page Layout</h2>
                   <button onClick={() => { setShowSectionModal(true); setSectionForm({ title: '', columns: 2 }); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Section</button>
                 </div>

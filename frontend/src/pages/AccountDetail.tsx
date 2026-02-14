@@ -133,20 +133,20 @@ export default function AccountDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
+      <div className="mb-6 rounded-lg bg-white px-4 sm:px-6 py-4 shadow-sm border border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Account</p>
-            <h1 className="text-2xl font-bold text-gray-900 truncate">{account.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{account.name}</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <button onClick={startEdit} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Edit</button>
             <button onClick={() => { if (confirm('Delete this account?')) deleteMut.mutate(); }} className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
           </div>
         </div>
-        <div className="mt-4 flex gap-8">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {highlights.map((h) => (
-            <div key={h.label}>
+            <div key={h.label} className="min-w-0">
               <p className="text-xs font-medium text-gray-500 truncate">{h.label}</p>
               <p className="text-sm text-gray-900 truncate">{h.value || '—'}</p>
             </div>
@@ -156,15 +156,15 @@ export default function AccountDetail() {
 
       {/* Tabs */}
       <div>
-        <div className="border-b border-gray-200 mb-4">
-          <nav className="flex gap-4">
+        <div className="border-b border-gray-200 mb-4 overflow-x-auto">
+          <nav className="flex gap-4 min-w-max">
             <button
               onClick={() => setTab('details')}
-              className={`pb-2 text-sm font-medium border-b-2 transition-colors ${tab === 'details' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'details' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >Details</button>
             <button
               onClick={() => setTab('related')}
-              className={`pb-2 text-sm font-medium border-b-2 transition-colors ${tab === 'related' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              className={`pb-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${tab === 'related' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >Related</button>
           </nav>
         </div>
@@ -206,7 +206,7 @@ export default function AccountDetail() {
         {tab === 'related' && (
           <div className="space-y-6">
             <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-gray-200">
                 <h2 className="text-base font-semibold text-gray-900">Contacts ({relatedContacts.length})</h2>
                 <button onClick={() => { setShowContactModal(true); setContactForm({}); setContactErrors({}); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">New Contact</button>
               </div>
@@ -221,7 +221,7 @@ export default function AccountDetail() {
               />
             </div>
             <div className="rounded-lg bg-white shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-gray-200">
                 <h2 className="text-base font-semibold text-gray-900">Opportunities ({relatedOpps.length})</h2>
                 <button onClick={() => { setShowOppModal(true); setOppForm({}); setOppErrors({}); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">New Opportunity</button>
               </div>
