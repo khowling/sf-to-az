@@ -28,7 +28,7 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
   return (
     <div className="rounded-lg bg-white shadow-sm border border-gray-200">
       {searchable && (
-        <div className="p-4 pb-0">
+        <div className="p-3 sm:p-4 pb-0">
           <input
             type="text"
             placeholder="Search…"
@@ -39,11 +39,11 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
         </div>
       )}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-full">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
               {columns.map((col) => (
-                <th key={col.key} scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th key={col.key} scope="col" className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 whitespace-nowrap">
                   {col.label}
                 </th>
               ))}
@@ -52,7 +52,7 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
           <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={columns.length} className="px-3 sm:px-4 py-6 sm:py-8 text-center text-gray-400">
                   No records found
                 </td>
               </tr>
@@ -64,8 +64,8 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
                   className={onRowClick ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} data-label={col.label} className="px-4 py-3 text-gray-700">
-                      <div className="truncate">
+                    <td key={col.key} data-label={col.label} className="px-3 sm:px-4 py-2 sm:py-3 text-gray-700">
+                      <div className="truncate max-w-[200px] sm:max-w-none">
                         {col.render ? col.render(row[col.key], row) : (row[col.key] as ReactNode) ?? '—'}
                       </div>
                     </td>
