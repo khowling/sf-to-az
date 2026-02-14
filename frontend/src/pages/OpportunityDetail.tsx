@@ -59,7 +59,7 @@ function StageProgress({ current }: { current: string }) {
                   : i === stages.length - 1
                   ? 'polygon(10px 0, 100% 0, 100% 100%, 0 100%, 10px 50%)'
                   : 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%)',
-                marginLeft: i > 0 ? '-8px' : 0,
+                marginLeft: i > 0 ? '-5px' : 0,
                 zIndex: stages.length - i,
                 boxShadow: isCurrent ? '0 0 0 2px #fff, 0 0 0 4px ' + border : 'none',
                 borderRadius: isCurrent ? '2px' : 0,
