@@ -52,8 +52,12 @@ export default function AccountLookup({ value, onChange, error }: AccountLookupP
               onClick={() => { onChange(null); setSearch(''); }}
               className="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
               style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)' }}
+              title="Clear"
             >
-              <span className="slds-assistive-text">Clear</span>✕
+              <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor" style={{ width: '0.875rem', height: '0.875rem' }}>
+                <path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" />
+              </svg>
+              <span className="slds-assistive-text">Clear</span>
             </button>
           )}
         </div>

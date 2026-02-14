@@ -151,9 +151,15 @@ export default function Settings() {
                             <td><span className="slds-text-body_regular">{fd?.label ?? fn}</span></td>
                             <td style={{ width: '8rem', textAlign: 'right' }}>
                               <div className="slds-button-group" role="group">
-                                <button onClick={() => moveField(i, -1)} disabled={i === 0} className="slds-button slds-button_icon slds-button_icon-border" title="Move up">↑</button>
-                                <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="slds-button slds-button_icon slds-button_icon-border" title="Move down">↓</button>
-                                <button onClick={() => removeFromLayout(fn)} className="slds-button slds-button_icon slds-button_icon-border" title="Remove" style={{ color: '#ea001e' }}>✕</button>
+                                <button onClick={() => moveField(i, -1)} disabled={i === 0} className="slds-button slds-button_icon slds-button_icon-border" title="Move up">
+                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
+                                </button>
+                                <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="slds-button slds-button_icon slds-button_icon-border" title="Move down">
+                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
+                                </button>
+                                <button onClick={() => removeFromLayout(fn)} className="slds-button slds-button_icon slds-button_icon-border" title="Remove" style={{ color: '#ea001e' }}>
+                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
+                                </button>
                               </div>
                             </td>
                           </tr>
