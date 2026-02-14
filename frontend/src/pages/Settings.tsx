@@ -15,6 +15,7 @@ export default function Settings() {
   const [showFieldModal, setShowFieldModal] = useState(false);
   const [fieldForm, setFieldForm] = useState({ fieldName: '', label: '', fieldType: 'text' as FieldDefinition['fieldType'], required: false, options: '' });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [dataCounts, setDataCounts] = useState({ accounts: 100000, contacts: 200000, opportunities: 1000000 });
 
   const { data: fields = [] } = useQuery({ queryKey: ['fieldDefs', activeObjectTab], queryFn: () => fieldDefsApi.list(activeObjectTab) });
   const { data: layout } = useQuery({ queryKey: ['pageLayout', activeObjectTab], queryFn: () => pageLayoutsApi.get(activeObjectTab) });
@@ -47,13 +48,13 @@ export default function Settings() {
   });
 
   const handleGenerateTestData = async () => {
-    if (!confirm('This will generate 100,000 accounts, 200,000 contacts, and 1,000,000 opportunities. This may take several minutes. Continue?')) {
+    if (!confirm(`This will generate ${dataCounts.accounts.toLocaleString()} accounts, ${dataCounts.contacts.toLocaleString()} contacts, and ${dataCounts.opportunities.toLocaleString()} opportunities. This may take several minutes. Continue?`)) {
       return;
     }
     
     setIsGenerating(true);
     try {
-      const result = await testDataApi.generate();
+      const result = await testDataApi.generate(dataCounts);
       qc.invalidateQueries({ queryKey: ['accounts'] });
       qc.invalidateQueries({ queryKey: ['contacts'] });
       qc.invalidateQueries({ queryKey: ['opportunities'] });
@@ -194,12 +195,21 @@ export default function Settings() {
                 </div>
                 <div className="px-6 py-6">
                   <div className="rounded-lg bg-gray-50 border border-gray-200 p-4 mb-6">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-2">What will be generated:</h3>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                      <li><strong>100,000 Accounts</strong> — With realistic company names, industries, and contact information</li>
-                      <li><strong>200,000 Contacts</strong> — Linked to accounts with realistic names and email addresses</li>
-                      <li><strong>1,000,000 Opportunities</strong> — With various stages, amounts, and close dates</li>
-                    </ul>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Number of records to generate:</h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Accounts</label>
+                        <input type="number" min={1} max={500000} value={dataCounts.accounts} onChange={(e) => setDataCounts(p => ({ ...p, accounts: parseInt(e.target.value) || 0 }))} className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Contacts</label>
+                        <input type="number" min={1} max={1000000} value={dataCounts.contacts} onChange={(e) => setDataCounts(p => ({ ...p, contacts: parseInt(e.target.value) || 0 }))} className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Opportunities</label>
+                        <input type="number" min={1} max={5000000} value={dataCounts.opportunities} onChange={(e) => setDataCounts(p => ({ ...p, opportunities: parseInt(e.target.value) || 0 }))} className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                      </div>
+                    </div>
                   </div>
                   <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-6 flex items-start gap-3" role="alert">
                     <svg className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></svg>

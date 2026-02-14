@@ -41,13 +41,13 @@ function generateCloseDate(): string {
 }
 
 // POST /api/test-data/generate
-router.post('/generate', async (_req: Request, res: Response) => {
+router.post('/generate', async (req: Request, res: Response) => {
   try {
     const startTime = Date.now();
     const batchSize = 1000;
-    const accountCount = 100000;
-    const contactCount = 200000;
-    const opportunityCount = 1000000;
+    const accountCount = Math.min(Number(req.body?.accounts) || 100000, 500000);
+    const contactCount = Math.min(Number(req.body?.contacts) || 200000, 1000000);
+    const opportunityCount = Math.min(Number(req.body?.opportunities) || 1000000, 5000000);
 
     console.log('Starting test data generation...');
     console.log(`Target: ${accountCount} accounts, ${contactCount} contacts, ${opportunityCount} opportunities`);
