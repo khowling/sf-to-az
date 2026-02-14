@@ -11,7 +11,7 @@ permissions:
 
 env:
   RESOURCE_GROUP: mycrm-rg
-  LOCATION: westeurope
+  LOCATION: uksouth
   APP_NAME: mycrm
 
 jobs:
