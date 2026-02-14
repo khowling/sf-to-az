@@ -2,40 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { searchApi } from '../api/client';
 
-// Inline SVG icons for nav items
-const icons = {
-  home: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <path d="M12 3L4 9v12h5v-7h6v7h5V9l-8-6z" />
-    </svg>
-  ),
-  accounts: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z" />
-    </svg>
-  ),
-  contacts: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-    </svg>
-  ),
-  opportunities: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
-    </svg>
-  ),
-  settings: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-      <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
-    </svg>
-  ),
-};
-
 const navLinks = [
-  { to: '/', label: 'Home', icon: icons.home },
-  { to: '/accounts', label: 'Accounts', icon: icons.accounts },
-  { to: '/contacts', label: 'Contacts', icon: icons.contacts },
-  { to: '/opportunities', label: 'Opportunities', icon: icons.opportunities },
+  { to: '/', label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4.5 h-4.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg> },
+  { to: '/accounts', label: 'Accounts', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4.5 h-4.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" /></svg> },
+  { to: '/contacts', label: 'Contacts', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4.5 h-4.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg> },
+  { to: '/opportunities', label: 'Opportunities', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-4.5 h-4.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 ];
 
 export default function Layout() {
@@ -47,20 +18,17 @@ export default function Layout() {
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedTerm(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fire search
   useEffect(() => {
     if (debouncedTerm.length < 2) { setResults(null); setShowDropdown(false); return; }
     setIsSearching(true);
     searchApi.query(debouncedTerm).then(r => { setResults(r); setShowDropdown(true); }).finally(() => setIsSearching(false));
   }, [debouncedTerm]);
 
-  // Close on click outside or Escape
   useEffect(() => {
     const handleClick = (e: MouseEvent) => { if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowDropdown(false); };
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowDropdown(false); };
@@ -72,176 +40,92 @@ export default function Layout() {
   const navigateTo = (path: string) => { setShowDropdown(false); setSearchTerm(''); navigate(path); };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Top header bar */}
-      <header
-        style={{
-          background: 'linear-gradient(135deg, #032d60 0%, #0b5cab 50%, #1b96ff 100%)',
-          padding: '0 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: '3.25rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        {/* Logo + App Name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-          <div
-            style={{
-              width: '2.125rem',
-              height: '2.125rem',
-              borderRadius: '0.625rem',
-              background: 'linear-gradient(135deg, #1b96ff 0%, #032d60 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2)',
-              border: '1.5px solid rgba(255,255,255,0.3)',
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: '0.9375rem', fontWeight: 900, fontFamily: 'system-ui', lineHeight: 1 }}>m</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="sticky top-0 z-20 h-14 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl px-6 flex items-center justify-between">
+        {/* Logo */}
+        <NavLink to="/" className="flex items-center gap-2.5 no-underline group">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-600/25 group-hover:shadow-md group-hover:shadow-blue-600/30 transition-shadow">
+            <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5 text-white">
+              <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z" fill="currentColor" />
+              <path d="M9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z" fill="currentColor" />
+              <path d="M16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" fill="currentColor" />
+            </svg>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0' }}>
-            <span
-              style={{
-                color: 'rgba(176,213,255,0.9)',
-                fontSize: '1.0625rem',
-                fontWeight: 400,
-                letterSpacing: '0.02em',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-              }}
-            >
-              my
-            </span>
-            <span
-              style={{
-                color: '#fff',
-                fontSize: '1.0625rem',
-                fontWeight: 700,
-                letterSpacing: '0.02em',
-                textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-              }}
-            >
-              CRM
-            </span>
-          </div>
-        </div>
+          <span className="text-[0.9375rem] font-semibold text-gray-900 tracking-tight">
+            <span className="text-gray-400 font-normal">my</span>CRM
+          </span>
+        </NavLink>
 
-        {/* Nav links */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', height: '100%' }}>
-          {navLinks.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              end={l.to === '/'}
-              style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.375rem',
-                padding: '0.375rem 0.875rem',
-                borderRadius: '0.375rem',
-                color: isActive ? '#fff' : 'rgba(255,255,255,0.75)',
-                backgroundColor: isActive ? 'rgba(255,255,255,0.18)' : 'transparent',
-                textDecoration: 'none',
-                fontSize: '0.8125rem',
-                fontWeight: isActive ? 600 : 400,
-                transition: 'all 0.15s ease',
-                height: '2.125rem',
-              })}
-              onMouseEnter={(e) => {
-                if (!e.currentTarget.classList.contains('active'))
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-              }}
-              onMouseLeave={(e) => {
-                if (!e.currentTarget.classList.contains('active'))
-                  e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
+        {/* Nav */}
+        <nav className="flex items-center gap-1 h-full">
+          {navLinks.map(l => (
+            <NavLink key={l.to} to={l.to} end={l.to === '/'}
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.8125rem] font-medium no-underline transition-all ${
+                  isActive
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                }`
+              }>
               {l.icon}
               <span>{l.label}</span>
             </NavLink>
           ))}
         </nav>
 
-        {/* Search bar */}
-        <div ref={searchRef} style={{ position: 'relative', flex: '0 0 20rem' }}>
-          <div style={{ position: 'relative' }}>
-            <svg viewBox="0 0 24 24" fill="currentColor" style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', width: '1rem', height: '1rem', color: 'rgba(255,255,255,0.6)' }}>
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+        {/* Search */}
+        <div ref={searchRef} className="relative w-72">
+          <div className="relative">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
             <input
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               onFocus={() => { if (results && searchTerm.length >= 2) setShowDropdown(true); }}
-              placeholder="Search all records..."
-              style={{
-                width: '100%',
-                padding: '0.375rem 0.75rem 0.375rem 2rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                color: '#fff',
-                fontSize: '0.8125rem',
-                outline: 'none',
-              }}
+              placeholder="Search..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
             />
           </div>
           {showDropdown && results && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              marginTop: '0.375rem',
-              backgroundColor: '#fff',
-              borderRadius: '0.5rem',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-              maxHeight: '24rem',
-              overflowY: 'auto',
-              zIndex: 50,
-            }}>
-              {isSearching && <p style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.8125rem' }}>Searching...</p>}
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-lg shadow-gray-200/50 border border-gray-200 max-h-96 overflow-y-auto z-50">
+              {isSearching && <p className="px-3 py-3 text-sm text-gray-500">Searching...</p>}
               {!isSearching && results.accounts.total === 0 && results.contacts.total === 0 && results.opportunities.total === 0 && (
-                <p style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.8125rem' }}>No results found</p>
+                <p className="px-3 py-3 text-sm text-gray-500">No results found</p>
               )}
               {results.accounts.data.length > 0 && (
                 <div>
-                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6' }}>
-                    Accounts ({results.accounts.total.toLocaleString()} results)
+                  <div className="px-3 py-2 text-[0.6875rem] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    Accounts · {results.accounts.total.toLocaleString()}
                   </div>
                   {results.accounts.data.slice(0, 5).map(a => (
-                    <button key={a.id} onClick={() => navigateTo(`/accounts/${a.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                    <button key={a.id} onClick={() => navigateTo(`/accounts/${a.id}`)} className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       {a.name}
                     </button>
                   ))}
                 </div>
               )}
               {results.contacts.data.length > 0 && (
-                <div>
-                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6', borderTop: '1px solid #e5e7eb' }}>
-                    Contacts ({results.contacts.total.toLocaleString()} results)
+                <div className="border-t border-gray-100">
+                  <div className="px-3 py-2 text-[0.6875rem] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    Contacts · {results.contacts.total.toLocaleString()}
                   </div>
                   {results.contacts.data.slice(0, 5).map(c => (
-                    <button key={c.id} onClick={() => navigateTo(`/contacts/${c.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                    <button key={c.id} onClick={() => navigateTo(`/contacts/${c.id}`)} className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       {c.firstName} {c.lastName}
                     </button>
                   ))}
                 </div>
               )}
               {results.opportunities.data.length > 0 && (
-                <div>
-                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6', borderTop: '1px solid #e5e7eb' }}>
-                    Opportunities ({results.opportunities.total.toLocaleString()} results)
+                <div className="border-t border-gray-100">
+                  <div className="px-3 py-2 text-[0.6875rem] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    Opportunities · {results.opportunities.total.toLocaleString()}
                   </div>
                   {results.opportunities.data.slice(0, 5).map(o => (
-                    <button key={o.id} onClick={() => navigateTo(`/opportunities/${o.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
-                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                    <button key={o.id} onClick={() => navigateTo(`/opportunities/${o.id}`)} className="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                       {o.name}{o.accountName ? ` — ${o.accountName}` : ''}
                     </button>
                   ))}
@@ -251,28 +135,22 @@ export default function Layout() {
           )}
         </div>
 
-        {/* Settings cog */}
-        <NavLink
-          to="/settings"
-          style={({ isActive }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '2.25rem',
-            height: '2.25rem',
-            borderRadius: '50%',
-            color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
-            backgroundColor: isActive ? 'rgba(255,255,255,0.18)' : 'transparent',
-            textDecoration: 'none',
-            transition: 'all 0.15s ease',
-          })}
-          title="Settings"
-        >
-          {icons.settings}
+        {/* Settings */}
+        <NavLink to="/settings"
+          className={({ isActive }) =>
+            `flex items-center justify-center w-8 h-8 rounded-lg no-underline transition-all ${
+              isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+            }`
+          }
+          title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-[1.125rem] h-[1.125rem]">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </NavLink>
       </header>
 
-      <main style={{ maxWidth: '80rem', margin: '0 auto', padding: '1.5rem' }}>
+      <main className="max-w-7xl mx-auto px-6 py-6">
         <Outlet />
       </main>
     </div>
