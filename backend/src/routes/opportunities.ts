@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { opportunities, accounts } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -16,23 +16,33 @@ const opportunitySchema = z.object({
 });
 
 // GET /api/opportunities
-router.get('/', async (_req: Request, res: Response) => {
-  const rows = await db.select({
-    id: opportunities.id,
-    name: opportunities.name,
-    accountId: opportunities.accountId,
-    accountName: accounts.name,
-    amount: opportunities.amount,
-    stage: opportunities.stage,
-    closeDate: opportunities.closeDate,
-    customFields: opportunities.customFields,
-    createdAt: opportunities.createdAt,
-    updatedAt: opportunities.updatedAt,
-  })
-    .from(opportunities)
-    .leftJoin(accounts, eq(opportunities.accountId, accounts.id))
-    .orderBy(opportunities.name);
-  res.json(rows);
+router.get('/', async (req: Request, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
+  const offset = (page - 1) * limit;
+
+  const [rows, [{ total }]] = await Promise.all([
+    db.select({
+      id: opportunities.id,
+      name: opportunities.name,
+      accountId: opportunities.accountId,
+      accountName: accounts.name,
+      amount: opportunities.amount,
+      stage: opportunities.stage,
+      closeDate: opportunities.closeDate,
+      customFields: opportunities.customFields,
+      createdAt: opportunities.createdAt,
+      updatedAt: opportunities.updatedAt,
+    })
+      .from(opportunities)
+      .leftJoin(accounts, eq(opportunities.accountId, accounts.id))
+      .orderBy(opportunities.name)
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(opportunities),
+  ]);
+
+  res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/opportunities/:id

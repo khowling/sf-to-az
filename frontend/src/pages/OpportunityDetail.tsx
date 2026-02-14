@@ -139,10 +139,10 @@ export default function OpportunityDetail() {
 
   const { data: opp, isLoading } = useQuery({ queryKey: ['opportunities', id], queryFn: () => opportunitiesApi.get(id!) });
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'opportunity'], queryFn: () => fieldDefsApi.list('opportunity') });
-  const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list });
+  const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list() });
 
   const allFields = [...builtInFields, ...customFields.filter((f) => f.isCustom)];
-  const linkedAccount = accounts.find((a) => a.id === opp?.accountId);
+  const linkedAccount = (accountsRes?.data ?? []).find((a) => a.id === opp?.accountId);
 
   const updateMut = useMutation({
     mutationFn: (data: Record<string, unknown>) => {

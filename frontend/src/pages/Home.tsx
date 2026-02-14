@@ -20,9 +20,16 @@ function StatCard({ label, count, subtitle, to, color }: { label: string; count:
 }
 
 export default function Home() {
-  const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list });
-  const { data: contacts = [] } = useQuery({ queryKey: ['contacts'], queryFn: contactsApi.list });
-  const { data: opps = [] } = useQuery({ queryKey: ['opportunities'], queryFn: opportunitiesApi.list });
+  const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list(1, 500) });
+  const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list(1, 500) });
+  const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list(1, 500) });
+
+  const accounts = accountsRes?.data ?? [];
+  const contacts = contactsRes?.data ?? [];
+  const opps = oppsRes?.data ?? [];
+  const accountsTotal = accountsRes?.total ?? 0;
+  const contactsTotal = contactsRes?.total ?? 0;
+  const oppsTotal = oppsRes?.total ?? 0;
 
   const pipeline = opps.reduce((sum, o) => sum + (parseFloat(o.amount ?? '0') || 0), 0);
   const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -65,9 +72,9 @@ export default function Home() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-4">
-        <StatCard label="Accounts" count={accounts.length} to="/accounts" color="#0176d3" />
-        <StatCard label="Contacts" count={contacts.length} to="/contacts" color="#06a59a" />
-        <StatCard label="Opportunities" count={opps.length} subtitle={`Pipeline: ${fmt.format(pipeline)}`} to="/opportunities" color="#9050e9" />
+        <StatCard label="Accounts" count={accountsTotal} to="/accounts" color="#0176d3" />
+        <StatCard label="Contacts" count={contactsTotal} to="/contacts" color="#06a59a" />
+        <StatCard label="Opportunities" count={oppsTotal} subtitle={`Pipeline: ${fmt.format(pipeline)}`} to="/opportunities" color="#9050e9" />
       </div>
 
       {/* Charts */}
@@ -145,7 +152,7 @@ export default function Home() {
           <div className="p-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-gray-50 p-3 text-center">
-                <p className="text-xl font-bold" style={{ color: '#06a59a' }}>{contacts.length.toLocaleString()}</p>
+                <p className="text-xl font-bold" style={{ color: '#06a59a' }}>{contactsTotal.toLocaleString()}</p>
                 <p className="text-xs text-gray-500">Total Contacts</p>
               </div>
               <div className="rounded-lg bg-gray-50 p-3 text-center">

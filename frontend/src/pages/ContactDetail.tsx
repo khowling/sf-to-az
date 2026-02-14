@@ -25,10 +25,10 @@ export default function ContactDetail() {
 
   const { data: contact, isLoading } = useQuery({ queryKey: ['contacts', id], queryFn: () => contactsApi.get(id!) });
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'contact'], queryFn: () => fieldDefsApi.list('contact') });
-  const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list });
+  const { data: accountsRes } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list() });
 
   const allFields = [...builtInFields, ...customFields.filter((f) => f.isCustom)];
-  const linkedAccount = accounts.find((a) => a.id === contact?.accountId);
+  const linkedAccount = (accountsRes?.data ?? []).find((a) => a.id === contact?.accountId);
 
   const updateMut = useMutation({
     mutationFn: (data: Record<string, unknown>) => {

@@ -13,7 +13,8 @@ export default function AccountLookup({ value, onChange, error }: AccountLookupP
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: accounts = [] } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list });
+  const { data: response } = useQuery({ queryKey: ['accounts'], queryFn: () => accountsApi.list() });
+  const accounts = response?.data ?? [];
 
   const selected = accounts.find((a) => a.id === value);
   const filtered = accounts.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()));

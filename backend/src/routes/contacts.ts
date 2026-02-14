@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { contacts, accounts } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -16,23 +16,33 @@ const contactSchema = z.object({
 });
 
 // GET /api/contacts
-router.get('/', async (_req: Request, res: Response) => {
-  const rows = await db.select({
-    id: contacts.id,
-    firstName: contacts.firstName,
-    lastName: contacts.lastName,
-    email: contacts.email,
-    phone: contacts.phone,
-    accountId: contacts.accountId,
-    accountName: accounts.name,
-    customFields: contacts.customFields,
-    createdAt: contacts.createdAt,
-    updatedAt: contacts.updatedAt,
-  })
-    .from(contacts)
-    .leftJoin(accounts, eq(contacts.accountId, accounts.id))
-    .orderBy(contacts.lastName);
-  res.json(rows);
+router.get('/', async (req: Request, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
+  const offset = (page - 1) * limit;
+
+  const [rows, [{ total }]] = await Promise.all([
+    db.select({
+      id: contacts.id,
+      firstName: contacts.firstName,
+      lastName: contacts.lastName,
+      email: contacts.email,
+      phone: contacts.phone,
+      accountId: contacts.accountId,
+      accountName: accounts.name,
+      customFields: contacts.customFields,
+      createdAt: contacts.createdAt,
+      updatedAt: contacts.updatedAt,
+    })
+      .from(contacts)
+      .leftJoin(accounts, eq(contacts.accountId, accounts.id))
+      .orderBy(contacts.lastName)
+      .limit(limit)
+      .offset(offset),
+    db.select({ total: count() }).from(contacts),
+  ]);
+
+  res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/contacts/:id

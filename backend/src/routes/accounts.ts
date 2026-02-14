@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { accounts } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -15,9 +15,17 @@ const accountSchema = z.object({
 });
 
 // GET /api/accounts
-router.get('/', async (_req: Request, res: Response) => {
-  const rows = await db.select().from(accounts).orderBy(accounts.name);
-  res.json(rows);
+router.get('/', async (req: Request, res: Response) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
+  const offset = (page - 1) * limit;
+
+  const [rows, [{ total }]] = await Promise.all([
+    db.select().from(accounts).orderBy(accounts.name).limit(limit).offset(offset),
+    db.select({ total: count() }).from(accounts),
+  ]);
+
+  res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
 });
 
 // GET /api/accounts/:id

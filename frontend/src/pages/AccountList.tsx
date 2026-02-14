@@ -23,7 +23,11 @@ export default function AccountList() {
   const [formValues, setFormValues] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { data: accounts = [], isLoading } = useQuery({ queryKey: ['accounts'], queryFn: accountsApi.list });
+  const [page, setPage] = useState(1);
+
+  const { data: response, isLoading } = useQuery({ queryKey: ['accounts', page], queryFn: () => accountsApi.list(page) });
+  const accounts = response?.data ?? [];
+  const totalPages = response?.totalPages ?? 1;
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'account'], queryFn: () => fieldDefsApi.list('account') });
 
   const formFields = [...builtInFields, ...customFields.filter((f) => f.isCustom)];
@@ -63,6 +67,14 @@ export default function AccountList() {
         </button>
       </div>
       <RecordTable columns={columns} data={accounts as unknown as Record<string, unknown>[]} onRowClick={(r) => navigate(`/accounts/${r.id}`)} searchable />
+      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white rounded-b-lg">
+        <p className="text-sm text-gray-500">{response?.total?.toLocaleString()} total records</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+          <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+        </div>
+      </div>
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Account" footer={
         <>
           <button onClick={() => setShowModal(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>

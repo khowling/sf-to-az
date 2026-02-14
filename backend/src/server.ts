@@ -10,6 +10,8 @@ import fieldDefinitionRoutes from './routes/fieldDefinitions.js';
 import pageLayoutRoutes from './routes/pageLayouts.js';
 import testDataRoutes from './routes/testData.js';
 
+import searchRoutes from './routes/search.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
@@ -20,6 +22,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.use('/api/search', searchRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/opportunities', opportunityRoutes);

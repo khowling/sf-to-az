@@ -15,8 +15,16 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
 // ─── Accounts ─────────────────────────────────────────────
 import type { Account, Contact, Opportunity, FieldDefinition, PageLayout } from '../types';
 
+interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const accountsApi = {
-  list: () => request<Account[]>('/accounts'),
+  list: (page = 1, limit = 500) => request<PaginatedResponse<Account>>(`/accounts?page=${page}&limit=${limit}`),
   get: (id: string) => request<Account>(`/accounts/${id}`),
   create: (data: Partial<Account>) => request<Account>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Account>) => request<Account>(`/accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -25,7 +33,7 @@ export const accountsApi = {
 
 // ─── Contacts ─────────────────────────────────────────────
 export const contactsApi = {
-  list: () => request<Contact[]>('/contacts'),
+  list: (page = 1, limit = 500) => request<PaginatedResponse<Contact>>(`/contacts?page=${page}&limit=${limit}`),
   get: (id: string) => request<Contact>(`/contacts/${id}`),
   create: (data: Partial<Contact>) => request<Contact>('/contacts', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Contact>) => request<Contact>(`/contacts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -34,11 +42,20 @@ export const contactsApi = {
 
 // ─── Opportunities ────────────────────────────────────────
 export const opportunitiesApi = {
-  list: () => request<Opportunity[]>('/opportunities'),
+  list: (page = 1, limit = 500) => request<PaginatedResponse<Opportunity>>(`/opportunities?page=${page}&limit=${limit}`),
   get: (id: string) => request<Opportunity>(`/opportunities/${id}`),
   create: (data: Partial<Opportunity>) => request<Opportunity>('/opportunities', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Opportunity>) => request<Opportunity>(`/opportunities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete: (id: string) => request<void>(`/opportunities/${id}`, { method: 'DELETE' }),
+};
+
+// ─── Search ───────────────────────────────────────────────
+export const searchApi = {
+  query: (q: string, limit = 100) => request<{
+    accounts: { data: Account[]; total: number };
+    contacts: { data: Contact[]; total: number };
+    opportunities: { data: Opportunity[]; total: number };
+  }>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 };
 
 // ─── Field Definitions ───────────────────────────────────

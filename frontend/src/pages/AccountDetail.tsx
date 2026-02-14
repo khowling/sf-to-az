@@ -49,12 +49,12 @@ export default function AccountDetail() {
 
   const { data: account, isLoading } = useQuery({ queryKey: ['accounts', id], queryFn: () => accountsApi.get(id!) });
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'account'], queryFn: () => fieldDefsApi.list('account') });
-  const { data: contacts = [] } = useQuery({ queryKey: ['contacts'], queryFn: contactsApi.list });
-  const { data: opps = [] } = useQuery({ queryKey: ['opportunities'], queryFn: opportunitiesApi.list });
+  const { data: contactsRes } = useQuery({ queryKey: ['contacts'], queryFn: () => contactsApi.list() });
+  const { data: oppsRes } = useQuery({ queryKey: ['opportunities'], queryFn: () => opportunitiesApi.list() });
 
   const allFields = [...builtInFields, ...customFields.filter((f) => f.isCustom)];
-  const relatedContacts = contacts.filter((c) => c.accountId === id);
-  const relatedOpps = opps.filter((o) => o.accountId === id);
+  const relatedContacts = (contactsRes?.data ?? []).filter((c) => c.accountId === id);
+  const relatedOpps = (oppsRes?.data ?? []).filter((o) => o.accountId === id);
 
   const updateMut = useMutation({
     mutationFn: (data: Record<string, unknown>) => {

@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { searchApi } from '../api/client';
 
 // Inline SVG icons for nav items
 const icons = {
@@ -37,6 +39,38 @@ const navLinks = [
 ];
 
 export default function Layout() {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const [results, setResults] = useState<Awaited<ReturnType<typeof searchApi.query>> | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedTerm(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fire search
+  useEffect(() => {
+    if (debouncedTerm.length < 2) { setResults(null); setShowDropdown(false); return; }
+    setIsSearching(true);
+    searchApi.query(debouncedTerm).then(r => { setResults(r); setShowDropdown(true); }).finally(() => setIsSearching(false));
+  }, [debouncedTerm]);
+
+  // Close on click outside or Escape
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => { if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowDropdown(false); };
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowDropdown(false); };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => { document.removeEventListener('mousedown', handleClick); document.removeEventListener('keydown', handleKey); };
+  }, []);
+
+  const navigateTo = (path: string) => { setShowDropdown(false); setSearchTerm(''); navigate(path); };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Top header bar */}
@@ -131,6 +165,91 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Search bar */}
+        <div ref={searchRef} style={{ position: 'relative', flex: '0 0 20rem' }}>
+          <div style={{ position: 'relative' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor" style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', width: '1rem', height: '1rem', color: 'rgba(255,255,255,0.6)' }}>
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              onFocus={() => { if (results && searchTerm.length >= 2) setShowDropdown(true); }}
+              placeholder="Search all records..."
+              style={{
+                width: '100%',
+                padding: '0.375rem 0.75rem 0.375rem 2rem',
+                borderRadius: '0.375rem',
+                border: 'none',
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                fontSize: '0.8125rem',
+                outline: 'none',
+              }}
+            />
+          </div>
+          {showDropdown && results && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              marginTop: '0.375rem',
+              backgroundColor: '#fff',
+              borderRadius: '0.5rem',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+              maxHeight: '24rem',
+              overflowY: 'auto',
+              zIndex: 50,
+            }}>
+              {isSearching && <p style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.8125rem' }}>Searching...</p>}
+              {!isSearching && results.accounts.total === 0 && results.contacts.total === 0 && results.opportunities.total === 0 && (
+                <p style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.8125rem' }}>No results found</p>
+              )}
+              {results.accounts.data.length > 0 && (
+                <div>
+                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6' }}>
+                    Accounts ({results.accounts.total.toLocaleString()} results)
+                  </div>
+                  {results.accounts.data.slice(0, 5).map(a => (
+                    <button key={a.id} onClick={() => navigateTo(`/accounts/${a.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {results.contacts.data.length > 0 && (
+                <div>
+                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6', borderTop: '1px solid #e5e7eb' }}>
+                    Contacts ({results.contacts.total.toLocaleString()} results)
+                  </div>
+                  {results.contacts.data.slice(0, 5).map(c => (
+                    <button key={c.id} onClick={() => navigateTo(`/contacts/${c.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                      {c.firstName} {c.lastName}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {results.opportunities.data.length > 0 && (
+                <div>
+                  <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid #f3f4f6', borderTop: '1px solid #e5e7eb' }}>
+                    Opportunities ({results.opportunities.total.toLocaleString()} results)
+                  </div>
+                  {results.opportunities.data.slice(0, 5).map(o => (
+                    <button key={o.id} onClick={() => navigateTo(`/opportunities/${o.id}`)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.8125rem', color: '#111827', cursor: 'pointer', border: 'none', background: 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f3f4f6')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}>
+                      {o.name}{o.accountName ? ` — ${o.accountName}` : ''}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Settings cog */}
         <NavLink
