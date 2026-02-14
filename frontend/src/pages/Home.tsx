@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 function StatCard({ label, count, subtitle, to, color }: { label: string; count: number; subtitle?: string; to: string; color: string }) {
   return (
@@ -93,12 +93,12 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 85 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
-                <YAxis tick={{ fontSize: 10 }} />
+              <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: 0, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
+                <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" cursor="pointer" onClick={handleBarClick} />
+                <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" cursor="pointer" onClick={handleBarClick} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -111,12 +111,12 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 10, bottom: 85 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 15 }} />
-                <YAxis tick={{ fontSize: 10 }} />
+              <BarChart data={pipelineData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
+                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
-                <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" cursor="pointer" onClick={handleBarClick} />
+                <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" cursor="pointer" onClick={handleBarClick} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,19 +133,27 @@ export default function Home() {
                 <Pie
                   data={industryData}
                   cx="50%"
-                  cy="45%"
+                  cy="40%"
                   labelLine={false}
-                  label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={70}
+                  outerRadius={75}
+                  innerRadius={30}
                   fill="#8884d8"
                   dataKey="value"
-                  style={{ fontSize: 10 }}
+                  paddingAngle={2}
                 >
                   {industryData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={INDUSTRY_COLORS[index % INDUSTRY_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value, name) => [`${value} accounts`, name]} />
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ fontSize: 10, paddingTop: 4 }}
+                  iconSize={8}
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
