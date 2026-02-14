@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { opportunities, accounts } from '../db/schema.js';
-import { eq, count, and } from 'drizzle-orm';
+import { eq, count, and, gte, lte, lt, notInArray } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -21,7 +21,47 @@ router.get('/', async (req: Request, res: Response) => {
   const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
   const offset = (page - 1) * limit;
   const stageFilter = req.query.stage as string | undefined;
-  const where = stageFilter ? eq(opportunities.stage, stageFilter) : undefined;
+  const amountMin = req.query.amountMin as string | undefined;
+  const amountMax = req.query.amountMax as string | undefined;
+  const closeDateRange = req.query.closeDateRange as string | undefined;
+
+  const conditions = [];
+  if (stageFilter) conditions.push(eq(opportunities.stage, stageFilter));
+  if (amountMin) conditions.push(gte(opportunities.amount, amountMin));
+  if (amountMax) conditions.push(lte(opportunities.amount, amountMax));
+  if (closeDateRange) {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = today.getMonth();
+    const dd = today.getDate();
+    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    if (closeDateRange === 'this_week') {
+      const day = today.getDay();
+      const monday = new Date(yyyy, mm, dd - (day === 0 ? 6 : day - 1));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      conditions.push(gte(opportunities.closeDate, fmt(monday)));
+      conditions.push(lte(opportunities.closeDate, fmt(sunday)));
+    } else if (closeDateRange === 'this_month') {
+      const first = new Date(yyyy, mm, 1);
+      const last = new Date(yyyy, mm + 1, 0);
+      conditions.push(gte(opportunities.closeDate, fmt(first)));
+      conditions.push(lte(opportunities.closeDate, fmt(last)));
+    } else if (closeDateRange === 'this_quarter') {
+      const qStart = Math.floor(mm / 3) * 3;
+      const first = new Date(yyyy, qStart, 1);
+      const last = new Date(yyyy, qStart + 3, 0);
+      conditions.push(gte(opportunities.closeDate, fmt(first)));
+      conditions.push(lte(opportunities.closeDate, fmt(last)));
+    } else if (closeDateRange === 'this_year') {
+      conditions.push(gte(opportunities.closeDate, `${yyyy}-01-01`));
+      conditions.push(lte(opportunities.closeDate, `${yyyy}-12-31`));
+    } else if (closeDateRange === 'overdue') {
+      conditions.push(lt(opportunities.closeDate, fmt(today)));
+      conditions.push(notInArray(opportunities.stage, ['Closed Won', 'Closed Lost']));
+    }
+  }
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [rows, [{ total }]] = await Promise.all([
     db.select({

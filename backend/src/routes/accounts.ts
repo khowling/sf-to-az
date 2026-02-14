@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db/index.js';
 import { accounts } from '../db/schema.js';
-import { eq, count } from 'drizzle-orm';
+import { eq, count, and, isNotNull } from 'drizzle-orm';
 import { z } from 'zod';
 
 const router = Router();
@@ -9,6 +9,7 @@ const router = Router();
 const accountSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   industry: z.string().optional().nullable(),
+  country: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   website: z.string().optional().nullable(),
   customFields: z.record(z.string(), z.any()).optional(),
@@ -19,13 +20,29 @@ router.get('/', async (req: Request, res: Response) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit as string) || 500));
   const offset = (page - 1) * limit;
+  const industryFilter = req.query.industry as string | undefined;
+  const countryFilter = req.query.country as string | undefined;
+
+  const conditions = [];
+  if (industryFilter) conditions.push(eq(accounts.industry, industryFilter));
+  if (countryFilter) conditions.push(eq(accounts.country, countryFilter));
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [rows, [{ total }]] = await Promise.all([
-    db.select().from(accounts).orderBy(accounts.name).limit(limit).offset(offset),
-    db.select({ total: count() }).from(accounts),
+    db.select().from(accounts).where(where).orderBy(accounts.name).limit(limit).offset(offset),
+    db.select({ total: count() }).from(accounts).where(where),
   ]);
 
   res.json({ data: rows, total, page, limit, totalPages: Math.ceil(total / limit) });
+});
+
+// GET /api/accounts/distinct-values
+router.get('/distinct-values', async (req, res) => {
+  const [industries, countries] = await Promise.all([
+    db.selectDistinct({ value: accounts.industry }).from(accounts).where(isNotNull(accounts.industry)).orderBy(accounts.industry),
+    db.selectDistinct({ value: accounts.country }).from(accounts).where(isNotNull(accounts.country)).orderBy(accounts.country),
+  ]);
+  res.json({ industries: industries.map(r => r.value).filter(Boolean), countries: countries.map(r => r.value).filter(Boolean) });
 });
 
 // GET /api/accounts/:id

@@ -45,6 +45,8 @@ const industryThemes: Record<string, {
 
 const availableThemes = Object.keys(industryThemes);
 
+const countries = ['United States', 'United Kingdom', 'Canada', 'Germany', 'France', 'Australia', 'Japan', 'Brazil', 'India', 'Singapore', 'Netherlands', 'Sweden', 'Ireland', 'Israel', 'South Korea'];
+
 const stages = ['Prospecting', 'Qualification', 'Needs Analysis', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
 const firstNames = [
   'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William',
@@ -129,6 +131,7 @@ router.post('/generate', async (req: Request, res: Response) => {
         batch.push({
           name: accountName,
           industry: randomElement(theme.industries),
+          country: randomElement(countries),
           phone: generatePhone(),
           website: `https://www.${accountName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
           customFields: {},

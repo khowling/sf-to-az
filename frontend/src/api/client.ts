@@ -24,7 +24,13 @@ interface PaginatedResponse<T> {
 }
 
 export const accountsApi = {
-  list: (page = 1, limit = 500) => request<PaginatedResponse<Account>>(`/accounts?page=${page}&limit=${limit}`),
+  list: (page = 1, limit = 500, filters?: { industry?: string; country?: string }) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (filters?.industry) params.set('industry', filters.industry);
+    if (filters?.country) params.set('country', filters.country);
+    return request<PaginatedResponse<Account>>(`/accounts?${params}`);
+  },
+  distinctValues: () => request<{ industries: string[]; countries: string[] }>('/accounts/distinct-values'),
   get: (id: string) => request<Account>(`/accounts/${id}`),
   create: (data: Partial<Account>) => request<Account>('/accounts', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Account>) => request<Account>(`/accounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -42,7 +48,14 @@ export const contactsApi = {
 
 // ─── Opportunities ────────────────────────────────────────
 export const opportunitiesApi = {
-  list: (page = 1, limit = 500, stage?: string) => request<PaginatedResponse<Opportunity>>(`/opportunities?page=${page}&limit=${limit}${stage ? `&stage=${encodeURIComponent(stage)}` : ''}`),
+  list: (page = 1, limit = 500, filters?: { stage?: string; amountMin?: number; amountMax?: number; closeDateRange?: string }) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    if (filters?.stage) params.set('stage', filters.stage);
+    if (filters?.amountMin != null) params.set('amountMin', String(filters.amountMin));
+    if (filters?.amountMax != null) params.set('amountMax', String(filters.amountMax));
+    if (filters?.closeDateRange) params.set('closeDateRange', filters.closeDateRange);
+    return request<PaginatedResponse<Opportunity>>(`/opportunities?${params}`);
+  },
   get: (id: string) => request<Opportunity>(`/opportunities/${id}`),
   create: (data: Partial<Opportunity>) => request<Opportunity>('/opportunities', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Opportunity>) => request<Opportunity>(`/opportunities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

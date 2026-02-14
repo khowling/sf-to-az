@@ -7,6 +7,7 @@ export const accounts = pgTable('accounts', {
   industry: varchar('industry', { length: 100 }),
   phone: varchar('phone', { length: 50 }),
   website: varchar('website', { length: 255 }),
+  country: varchar('country', { length: 100 }),
   customFields: jsonb('custom_fields').default({}),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

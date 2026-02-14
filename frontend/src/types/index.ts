@@ -6,6 +6,7 @@ export interface Account {
   industry: string | null;
   phone: string | null;
   website: string | null;
+  country?: string | null;
   customFields: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;

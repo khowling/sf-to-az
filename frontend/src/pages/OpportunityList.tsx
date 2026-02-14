@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { opportunitiesApi, fieldDefsApi } from '../api/client';
 import RecordTable from '../components/RecordTable';
 import Modal from '../components/Modal';
 import RecordForm from '../components/RecordForm';
+import FilterBar from '../components/FilterBar';
+import type { FilterConfig } from '../components/FilterBar';
 import { useToast } from '../components/Toast';
 import type { FieldDefinition } from '../types';
 
@@ -16,19 +18,60 @@ const builtInFields: FieldDefinition[] = [
   { id: '_close', objectType: 'opportunity', fieldName: 'closeDate', label: 'Close Date', fieldType: 'date', required: false, isCustom: false, options: [], validations: {}, sortOrder: 4, createdAt: '', updatedAt: '' },
 ];
 
+const stages = ['Prospecting', 'Qualification', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
+
+const filterConfigs: FilterConfig[] = [
+  { key: 'stage', label: 'Stage', type: 'select', options: stages },
+  { key: 'amountMin', label: 'Amount Min', type: 'number', placeholder: 'Min $' },
+  { key: 'amountMax', label: 'Amount Max', type: 'number', placeholder: 'Max $' },
+  { key: 'closeDateRange', label: 'Close Date', type: 'date-range' },
+];
+
 export default function OpportunityList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const stageFilter = searchParams.get('stage') || undefined;
   const toast = useToast();
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    const stage = searchParams.get('stage');
+    if (stage) initial.stage = stage;
+    return initial;
+  });
 
-  const { data: response, isLoading } = useQuery({ queryKey: ['opportunities', page, stageFilter], queryFn: () => opportunitiesApi.list(page, 500, stageFilter) });
+  // Sync URL stage param to filters on mount/change
+  useEffect(() => {
+    const stage = searchParams.get('stage');
+    if (stage && filters.stage !== stage) {
+      setFilters(f => ({ ...f, stage }));
+    }
+  }, [searchParams]);
+
+  const handleFiltersChange = (newFilters: Record<string, string>) => {
+    setFilters(newFilters);
+    setPage(1);
+    if (newFilters.stage) {
+      setSearchParams({ stage: newFilters.stage });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  const apiFilters = {
+    stage: filters.stage || undefined,
+    amountMin: filters.amountMin ? Number(filters.amountMin) : undefined,
+    amountMax: filters.amountMax ? Number(filters.amountMax) : undefined,
+    closeDateRange: filters.closeDateRange || undefined,
+  };
+
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['opportunities', page, apiFilters],
+    queryFn: () => opportunitiesApi.list(page, 500, apiFilters),
+  });
   const opps = response?.data ?? [];
   const totalPages = response?.totalPages ?? 1;
   const { data: customFields = [] } = useQuery({ queryKey: ['fieldDefs', 'opportunity'], queryFn: () => fieldDefsApi.list('opportunity') });
@@ -69,22 +112,13 @@ export default function OpportunityList() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Opportunities</h1>
-          {stageFilter && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 border border-purple-200 px-3 py-1 text-xs font-medium text-purple-700">
-              Stage: {stageFilter}
-              <button onClick={() => { setSearchParams({}); setPage(1); }} className="ml-1 text-purple-400 hover:text-purple-600">
-                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
-              </button>
-            </span>
-          )}
-        </div>
+      <div className="mb-4 flex items-center justify-between rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900">Opportunities</h1>
         <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
           New
         </button>
       </div>
+      <FilterBar filters={filterConfigs} values={filters} onChange={handleFiltersChange} />
       <RecordTable columns={columns} data={opps as unknown as Record<string, unknown>[]} onRowClick={(r) => navigate(`/opportunities/${r.id}`)} searchable />
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-white rounded-b-lg">
         <p className="text-sm text-gray-500">{response?.total?.toLocaleString()} total records</p>
