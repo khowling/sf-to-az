@@ -120,7 +120,7 @@ export default function AccountDetail() {
     createOppMut.mutate(oppForm);
   };
 
-  if (isLoading || !account) return <p className="slds-text-color_weak">Loading…</p>;
+  if (isLoading || !account) return <p className="text-gray-400">Loading…</p>;
 
   const highlights = [
     { label: 'Phone', value: account.phone },
@@ -133,140 +133,108 @@ export default function AccountDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="slds-page-header slds-m-bottom_medium">
-        <div className="slds-page-header__row">
-          <div className="slds-page-header__col-title">
-            <div className="slds-media">
-              <div className="slds-media__body">
-                <div className="slds-page-header__name">
-                  <div className="slds-page-header__name-title">
-                    <span className="slds-page-header__name-meta">Account</span>
-                    <h1><span className="slds-page-header__title slds-truncate">{account.name}</span></h1>
-                  </div>
-                </div>
-              </div>
-            </div>
+      <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Account</p>
+            <h1 className="text-2xl font-bold text-gray-900 truncate">{account.name}</h1>
           </div>
-          <div className="slds-page-header__col-actions">
-            <div className="slds-page-header__controls">
-              <button onClick={startEdit} className="slds-button slds-button_neutral">Edit</button>
-              <button onClick={() => { if (confirm('Delete this account?')) deleteMut.mutate(); }} className="slds-button slds-button_destructive">Delete</button>
-            </div>
+          <div className="flex gap-2">
+            <button onClick={startEdit} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Edit</button>
+            <button onClick={() => { if (confirm('Delete this account?')) deleteMut.mutate(); }} className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
           </div>
         </div>
-        <div className="slds-page-header__row slds-page-header__row_gutters">
-          <div className="slds-page-header__col-details">
-            <ul className="slds-page-header__detail-row">
-              {highlights.map((h) => (
-                <li key={h.label} className="slds-page-header__detail-block">
-                  <p className="slds-text-title slds-truncate">{h.label}</p>
-                  <p className="slds-text-body_regular slds-truncate">{h.value || '—'}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="mt-4 flex gap-8">
+          {highlights.map((h) => (
+            <div key={h.label}>
+              <p className="text-xs font-medium text-gray-500 truncate">{h.label}</p>
+              <p className="text-sm text-gray-900 truncate">{h.value || '—'}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="slds-tabs_default">
-        <ul className="slds-tabs_default__nav" role="tablist">
-          <li className={`slds-tabs_default__item ${tab === 'details' ? 'slds-is-active' : ''}`} role="presentation">
-            <a className="slds-tabs_default__link" role="tab" onClick={() => setTab('details')}>Details</a>
-          </li>
-          <li className={`slds-tabs_default__item ${tab === 'related' ? 'slds-is-active' : ''}`} role="presentation">
-            <a className="slds-tabs_default__link" role="tab" onClick={() => setTab('related')}>Related</a>
-          </li>
-        </ul>
+      <div>
+        <div className="border-b border-gray-200 mb-4">
+          <nav className="flex gap-4">
+            <button
+              onClick={() => setTab('details')}
+              className={`pb-2 text-sm font-medium border-b-2 transition-colors ${tab === 'details' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >Details</button>
+            <button
+              onClick={() => setTab('related')}
+              className={`pb-2 text-sm font-medium border-b-2 transition-colors ${tab === 'related' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >Related</button>
+          </nav>
+        </div>
 
         {tab === 'details' && (
-          <div className="slds-tabs_default__content slds-show">
-            <div className="slds-card">
-              <div className="slds-card__body slds-card__body_inner">
-                {editing ? (
-                  <>
-                    <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
-                    <div className="slds-m-top_medium">
-                      <button onClick={handleSave} className="slds-button slds-button_brand">Save</button>
-                      <button onClick={() => setEditing(false)} className="slds-button slds-button_neutral slds-m-left_x-small">Cancel</button>
+          <div className="rounded-lg bg-white shadow-sm border border-gray-200 p-6">
+            {editing ? (
+              <>
+                <RecordForm fields={allFields} values={editValues} onChange={(k, v) => setEditValues((p) => ({ ...p, [k]: v }))} errors={errors} />
+                <div className="mt-4 flex gap-2">
+                  <button onClick={handleSave} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
+                  <button onClick={() => setEditing(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {allFields.map((f) => {
+                  const val = ['name', 'industry', 'phone', 'website'].includes(f.fieldName)
+                    ? (account as unknown as Record<string, unknown>)[f.fieldName]
+                    : account.customFields?.[f.fieldName];
+                  return (
+                    <div key={f.fieldName}>
+                      <p className="text-xs font-medium text-gray-500">{f.label}</p>
+                      <div className="mt-1">
+                        {f.fieldType === 'boolean' ? (
+                          <input type="checkbox" checked={!!val} disabled className="h-4 w-4 rounded border-gray-300 text-blue-600" />
+                        ) : (
+                          <p className="text-sm text-gray-900">{val != null && val !== '' ? String(val) : '—'}</p>
+                        )}
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="slds-grid slds-wrap slds-gutters_small">
-                    {allFields.map((f) => {
-                      const val = ['name', 'industry', 'phone', 'website'].includes(f.fieldName)
-                        ? (account as unknown as Record<string, unknown>)[f.fieldName]
-                        : account.customFields?.[f.fieldName];
-                      return (
-                        <div key={f.fieldName} className="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_xx-small">
-                          <div className="slds-form-element slds-form-element_readonly">
-                            <span className="slds-form-element__label">{f.label}</span>
-                            <div className="slds-form-element__control">
-                              {f.fieldType === 'boolean' ? (
-                                <input type="checkbox" checked={!!val} disabled className="slds-checkbox" />
-                              ) : (
-                                <div className="slds-form-element__static">{val != null && val !== '' ? String(val) : '—'}</div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         )}
 
         {tab === 'related' && (
-          <div className="slds-tabs_default__content slds-show">
-            <div className="slds-card slds-m-bottom_medium">
-              <div className="slds-card__header slds-grid">
-                <header className="slds-media slds-media_center slds-has-flexi-truncate">
-                  <div className="slds-media__body">
-                    <h2 className="slds-card__header-title">Contacts ({relatedContacts.length})</h2>
-                  </div>
-                </header>
-                <div className="slds-no-flex">
-                  <button onClick={() => { setShowContactModal(true); setContactForm({}); setContactErrors({}); }} className="slds-button slds-button_neutral">New Contact</button>
-                </div>
+          <div className="space-y-6">
+            <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 className="text-base font-semibold text-gray-900">Contacts ({relatedContacts.length})</h2>
+                <button onClick={() => { setShowContactModal(true); setContactForm({}); setContactErrors({}); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">New Contact</button>
               </div>
-              <div className="slds-card__body">
-                <RecordTable
-                  columns={[
-                    { key: 'name', label: 'Name', render: (_, r) => `${r.firstName} ${r.lastName}` },
-                    { key: 'email', label: 'Email' },
-                    { key: 'phone', label: 'Phone' },
-                  ]}
-                  data={relatedContacts as unknown as Record<string, unknown>[]}
-                  onRowClick={(r) => navigate(`/contacts/${r.id}`)}
-                />
-              </div>
+              <RecordTable
+                columns={[
+                  { key: 'name', label: 'Name', render: (_, r) => `${r.firstName} ${r.lastName}` },
+                  { key: 'email', label: 'Email' },
+                  { key: 'phone', label: 'Phone' },
+                ]}
+                data={relatedContacts as unknown as Record<string, unknown>[]}
+                onRowClick={(r) => navigate(`/contacts/${r.id}`)}
+              />
             </div>
-            <div className="slds-card">
-              <div className="slds-card__header slds-grid">
-                <header className="slds-media slds-media_center slds-has-flexi-truncate">
-                  <div className="slds-media__body">
-                    <h2 className="slds-card__header-title">Opportunities ({relatedOpps.length})</h2>
-                  </div>
-                </header>
-                <div className="slds-no-flex">
-                  <button onClick={() => { setShowOppModal(true); setOppForm({}); setOppErrors({}); }} className="slds-button slds-button_neutral">New Opportunity</button>
-                </div>
+            <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 className="text-base font-semibold text-gray-900">Opportunities ({relatedOpps.length})</h2>
+                <button onClick={() => { setShowOppModal(true); setOppForm({}); setOppErrors({}); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">New Opportunity</button>
               </div>
-              <div className="slds-card__body">
-                <RecordTable
-                  columns={[
-                    { key: 'name', label: 'Name' },
-                    { key: 'amount', label: 'Amount', render: (v) => v ? `$${Number(v).toLocaleString()}` : '—' },
-                    { key: 'stage', label: 'Stage' },
-                    { key: 'closeDate', label: 'Close Date' },
-                  ]}
-                  data={relatedOpps as unknown as Record<string, unknown>[]}
-                  onRowClick={(r) => navigate(`/opportunities/${r.id}`)}
-                />
-              </div>
+              <RecordTable
+                columns={[
+                  { key: 'name', label: 'Name' },
+                  { key: 'amount', label: 'Amount', render: (v) => v ? `$${Number(v).toLocaleString()}` : '—' },
+                  { key: 'stage', label: 'Stage' },
+                  { key: 'closeDate', label: 'Close Date' },
+                ]}
+                data={relatedOpps as unknown as Record<string, unknown>[]}
+                onRowClick={(r) => navigate(`/opportunities/${r.id}`)}
+              />
             </div>
           </div>
         )}
@@ -275,8 +243,8 @@ export default function AccountDetail() {
       {/* New Contact Modal */}
       <Modal isOpen={showContactModal} onClose={() => setShowContactModal(false)} title="New Contact" footer={
         <>
-          <button onClick={() => setShowContactModal(false)} className="slds-button slds-button_neutral">Cancel</button>
-          <button onClick={handleSaveContact} className="slds-button slds-button_brand">Save</button>
+          <button onClick={() => setShowContactModal(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>
+          <button onClick={handleSaveContact} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
         </>
       }>
         <RecordForm fields={contactFieldsNoAcct} values={contactForm} onChange={(k, v) => setContactForm((p) => ({ ...p, [k]: v }))} errors={contactErrors} />
@@ -285,8 +253,8 @@ export default function AccountDetail() {
       {/* New Opportunity Modal */}
       <Modal isOpen={showOppModal} onClose={() => setShowOppModal(false)} title="New Opportunity" footer={
         <>
-          <button onClick={() => setShowOppModal(false)} className="slds-button slds-button_neutral">Cancel</button>
-          <button onClick={handleSaveOpp} className="slds-button slds-button_brand">Save</button>
+          <button onClick={() => setShowOppModal(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>
+          <button onClick={handleSaveOpp} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
         </>
       }>
         <RecordForm fields={oppBuiltIn.filter((f) => f.fieldName !== 'accountId')} values={oppForm} onChange={(k, v) => setOppForm((p) => ({ ...p, [k]: v }))} errors={oppErrors} />

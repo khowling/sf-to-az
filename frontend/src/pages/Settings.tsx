@@ -73,118 +73,92 @@ export default function Settings() {
 
   return (
     <div>
-      <div className="slds-page-header slds-m-bottom_medium">
-        <div className="slds-page-header__row">
-          <div className="slds-page-header__col-title">
-            <h1 className="slds-page-header__title">Settings</h1>
-          </div>
-        </div>
+      <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
       </div>
 
       {/* Object type tabs */}
-      <div className="slds-tabs_default">
-        <ul className="slds-tabs_default__nav" role="tablist">
-          {objectTypes.map((t) => (
-            <li key={t} className={`slds-tabs_default__item ${activeTab === t ? 'slds-is-active' : ''}`} role="presentation">
-              <a className="slds-tabs_default__link" role="tab" onClick={() => setActiveTab(t)} style={{ textTransform: 'capitalize' }}>{t}</a>
-            </li>
-          ))}
-        </ul>
+      <div>
+        <div className="border-b border-gray-200 mb-4">
+          <nav className="flex gap-4">
+            {objectTypes.map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`pb-2 text-sm font-medium capitalize border-b-2 transition-colors ${activeTab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >{t}</button>
+            ))}
+          </nav>
+        </div>
 
-        <div className="slds-tabs_default__content slds-show">
-          <div className="slds-grid slds-wrap slds-gutters">
-            {/* Field Definitions */}
-            <div className="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
-              <div className="slds-card">
-                <div className="slds-card__header slds-grid">
-                  <header className="slds-media slds-media_center slds-has-flexi-truncate">
-                    <div className="slds-media__body">
-                      <h2 className="slds-card__header-title">Field Definitions</h2>
-                    </div>
-                  </header>
-                  <div className="slds-no-flex">
-                    <button onClick={() => { setShowFieldModal(true); resetForm(); }} className="slds-button slds-button_neutral">Add Field</button>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Field Definitions */}
+          <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900">Field Definitions</h2>
+              <button onClick={() => { setShowFieldModal(true); resetForm(); }} className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Add Field</button>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {fields.map((f) => (
+                <div key={f.id} className="flex items-center justify-between px-6 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{f.label}</p>
+                    <p className="text-xs text-gray-500">{f.fieldName} · {f.fieldType}{f.required ? ' · required' : ''}</p>
+                  </div>
+                  <div>
+                    {f.isCustom && (
+                      <button onClick={() => { if (confirm(`Delete field "${f.label}"?`)) deleteFieldMut.mutate(f.id); }} className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
+                    )}
                   </div>
                 </div>
-                <div className="slds-card__body">
-                  <table className="slds-table slds-table_bordered slds-table_cell-buffer slds-no-row-hover">
-                    <tbody>
-                      {fields.map((f) => (
-                        <tr key={f.id}>
-                          <td>
-                            <p className="slds-text-body_regular" style={{ fontWeight: 500 }}>{f.label}</p>
-                            <p className="slds-text-body_small slds-text-color_weak">{f.fieldName} · {f.fieldType}{f.required ? ' · required' : ''}</p>
-                          </td>
-                          <td style={{ width: '4rem', textAlign: 'right' }}>
-                            {f.isCustom && (
-                              <button onClick={() => { if (confirm(`Delete field "${f.label}"?`)) deleteFieldMut.mutate(f.id); }} className="slds-button slds-button_destructive slds-button_stretch" style={{ fontSize: '0.75rem' }}>Delete</button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {fields.length === 0 && (
-                        <tr><td className="slds-text-color_weak">No fields defined</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              ))}
+              {fields.length === 0 && (
+                <div className="px-6 py-4 text-sm text-gray-400">No fields defined</div>
+              )}
             </div>
+          </div>
 
-            {/* Page Layout */}
-            <div className="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
-              <div className="slds-card">
-                <div className="slds-card__header slds-grid">
-                  <header className="slds-media slds-media_center slds-has-flexi-truncate">
-                    <div className="slds-media__body">
-                      <h2 className="slds-card__header-title">Page Layout</h2>
-                    </div>
-                  </header>
-                </div>
-                <div className="slds-card__body">
-                  <table className="slds-table slds-table_bordered slds-table_cell-buffer slds-no-row-hover">
-                    <tbody>
-                      {layoutFields.map((fn, i) => {
-                        const fd = fields.find((f) => f.fieldName === fn);
-                        return (
-                          <tr key={fn}>
-                            <td><span className="slds-text-body_regular">{fd?.label ?? fn}</span></td>
-                            <td style={{ width: '8rem', textAlign: 'right' }}>
-                              <div className="slds-button-group" role="group">
-                                <button onClick={() => moveField(i, -1)} disabled={i === 0} className="slds-button slds-button_icon slds-button_icon-border" title="Move up">
-                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
-                                </button>
-                                <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="slds-button slds-button_icon slds-button_icon-border" title="Move down">
-                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
-                                </button>
-                                <button onClick={() => removeFromLayout(fn)} className="slds-button slds-button_icon slds-button_icon-border" title="Remove" style={{ color: '#ea001e' }}>
-                                  <svg className="slds-button__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {layoutFields.length === 0 && (
-                        <tr><td className="slds-text-color_weak">No fields in layout</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {fieldsNotInLayout.length > 0 && (
-                  <div className="slds-card__footer">
-                    <p className="slds-text-body_small slds-text-color_weak slds-m-bottom_xx-small">Available fields:</p>
-                    <div className="slds-pill_container">
-                      {fieldsNotInLayout.map((f) => (
-                        <span key={f.fieldName} className="slds-pill slds-pill_link" onClick={() => addToLayout(f.fieldName)} style={{ cursor: 'pointer' }}>
-                          <span className="slds-pill__label">+ {f.label}</span>
-                        </span>
-                      ))}
+          {/* Page Layout */}
+          <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-base font-semibold text-gray-900">Page Layout</h2>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {layoutFields.map((fn, i) => {
+                const fd = fields.find((f) => f.fieldName === fn);
+                return (
+                  <div key={fn} className="flex items-center justify-between px-6 py-3">
+                    <span className="text-sm text-gray-900">{fd?.label ?? fn}</span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => moveField(i, -1)} disabled={i === 0} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move up">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z" /></svg>
+                      </button>
+                      <button onClick={() => moveField(i, 1)} disabled={i === layoutFields.length - 1} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 focus:outline-none" title="Move down">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z" /></svg>
+                      </button>
+                      <button onClick={() => removeFromLayout(fn)} className="rounded p-1 text-red-400 hover:bg-red-50 hover:text-red-600 focus:outline-none" title="Remove">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.36 5.64a1 1 0 00-1.41 0L12 10.59 7.05 5.64a1 1 0 10-1.41 1.41L10.59 12l-4.95 4.95a1 1 0 101.41 1.41L12 13.41l4.95 4.95a1 1 0 001.41-1.41L13.41 12l4.95-4.95a1 1 0 000-1.41z" /></svg>
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
+                );
+              })}
+              {layoutFields.length === 0 && (
+                <div className="px-6 py-4 text-sm text-gray-400">No fields in layout</div>
+              )}
             </div>
+            {fieldsNotInLayout.length > 0 && (
+              <div className="border-t border-gray-200 px-6 py-4">
+                <p className="text-xs text-gray-500 mb-2">Available fields:</p>
+                <div className="flex flex-wrap gap-2">
+                  {fieldsNotInLayout.map((f) => (
+                    <button key={f.fieldName} onClick={() => addToLayout(f.fieldName)} className="inline-flex items-center rounded-full border border-gray-300 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 focus:outline-none transition-colors">
+                      + {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -192,55 +166,40 @@ export default function Settings() {
       {/* Add Field Modal */}
       <Modal isOpen={showFieldModal} onClose={() => setShowFieldModal(false)} title="Add Custom Field" footer={
         <>
-          <button onClick={() => setShowFieldModal(false)} className="slds-button slds-button_neutral">Cancel</button>
-          <button onClick={handleCreateField} className="slds-button slds-button_brand">Create</button>
+          <button onClick={() => setShowFieldModal(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>
+          <button onClick={handleCreateField} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Create</button>
         </>
       }>
-        <div className="slds-form slds-form_stacked">
-          <div className="slds-form-element slds-m-bottom_small">
-            <label className="slds-form-element__label">Field Name</label>
-            <div className="slds-form-element__control">
-              <input type="text" value={fieldForm.fieldName} onChange={(e) => setFieldForm((p) => ({ ...p, fieldName: e.target.value }))} className="slds-input" placeholder="e.g. customScore" />
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Field Name</label>
+            <input type="text" value={fieldForm.fieldName} onChange={(e) => setFieldForm((p) => ({ ...p, fieldName: e.target.value }))} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="e.g. customScore" />
           </div>
-          <div className="slds-form-element slds-m-bottom_small">
-            <label className="slds-form-element__label">Label</label>
-            <div className="slds-form-element__control">
-              <input type="text" value={fieldForm.label} onChange={(e) => setFieldForm((p) => ({ ...p, label: e.target.value }))} className="slds-input" placeholder="e.g. Custom Score" />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Label</label>
+            <input type="text" value={fieldForm.label} onChange={(e) => setFieldForm((p) => ({ ...p, label: e.target.value }))} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="e.g. Custom Score" />
           </div>
-          <div className="slds-form-element slds-m-bottom_small">
-            <label className="slds-form-element__label">Field Type</label>
-            <div className="slds-form-element__control">
-              <div className="slds-select_container">
-                <select value={fieldForm.fieldType} onChange={(e) => setFieldForm((p) => ({ ...p, fieldType: e.target.value as FieldDefinition['fieldType'] }))} className="slds-select">
-                  <option value="text">Text</option>
-                  <option value="number">Number</option>
-                  <option value="date">Date</option>
-                  <option value="picklist">Picklist</option>
-                  <option value="boolean">Boolean</option>
-                </select>
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Field Type</label>
+            <select value={fieldForm.fieldType} onChange={(e) => setFieldForm((p) => ({ ...p, fieldType: e.target.value as FieldDefinition['fieldType'] }))} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option value="text">Text</option>
+              <option value="number">Number</option>
+              <option value="date">Date</option>
+              <option value="picklist">Picklist</option>
+              <option value="boolean">Boolean</option>
+            </select>
           </div>
           {fieldForm.fieldType === 'picklist' && (
-            <div className="slds-form-element slds-m-bottom_small">
-              <label className="slds-form-element__label">Options (comma-separated)</label>
-              <div className="slds-form-element__control">
-                <input type="text" value={fieldForm.options} onChange={(e) => setFieldForm((p) => ({ ...p, options: e.target.value }))} className="slds-input" placeholder="e.g. Option A, Option B, Option C" />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Options (comma-separated)</label>
+              <input type="text" value={fieldForm.options} onChange={(e) => setFieldForm((p) => ({ ...p, options: e.target.value }))} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="e.g. Option A, Option B, Option C" />
             </div>
           )}
-          <div className="slds-form-element">
-            <div className="slds-form-element__control">
-              <div className="slds-checkbox">
-                <input type="checkbox" id="req-checkbox" checked={fieldForm.required} onChange={(e) => setFieldForm((p) => ({ ...p, required: e.target.checked }))} />
-                <label className="slds-checkbox__label" htmlFor="req-checkbox">
-                  <span className="slds-checkbox_faux"></span>
-                  <span className="slds-form-element__label">Required</span>
-                </label>
-              </div>
-            </div>
+          <div>
+            <label className="inline-flex items-center gap-2">
+              <input type="checkbox" id="req-checkbox" checked={fieldForm.required} onChange={(e) => setFieldForm((p) => ({ ...p, required: e.target.checked }))} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              <span className="text-sm font-medium text-gray-700">Required</span>
+            </label>
           </div>
         </div>
       </Modal>

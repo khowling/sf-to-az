@@ -26,35 +26,33 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
     : data;
 
   return (
-    <div className="slds-card">
-      <div className="slds-card__body">
-        {searchable && (
-          <div className="slds-form-element slds-m-bottom_small" style={{ maxWidth: '20rem' }}>
-            <div className="slds-form-element__control">
-              <input
-                type="text"
-                placeholder="Search…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="slds-input"
-              />
-            </div>
-          </div>
-        )}
-        <table className="slds-table slds-table_bordered slds-table_cell-buffer">
+    <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+      {searchable && (
+        <div className="p-4 pb-0">
+          <input
+            type="text"
+            placeholder="Search…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-xs rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+      )}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="slds-line-height_reset">
+            <tr className="border-b border-gray-200 bg-gray-50">
               {columns.map((col) => (
-                <th key={col.key} scope="col">
-                  <div className="slds-truncate" title={col.label}>{col.label}</div>
+                <th key={col.key} scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  {col.label}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="slds-text-align_center slds-p-around_medium slds-text-color_weak">
+                <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-400">
                   No records found
                 </td>
               </tr>
@@ -63,11 +61,11 @@ export default function RecordTable({ columns, data, onRowClick, searchable }: R
                 <tr
                   key={(row.id as string) ?? i}
                   onClick={() => onRowClick?.(row)}
-                  className={onRowClick ? 'slds-hint-parent cursor-pointer' : ''}
+                  className={onRowClick ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} data-label={col.label}>
-                      <div className="slds-truncate">
+                    <td key={col.key} data-label={col.label} className="px-4 py-3 text-gray-700">
+                      <div className="truncate">
                         {col.render ? col.render(row[col.key], row) : (row[col.key] as ReactNode) ?? '—'}
                       </div>
                     </td>

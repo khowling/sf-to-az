@@ -38,7 +38,7 @@ const navLinks = [
 
 export default function Layout() {
   return (
-    <div className="slds-scope" style={{ minHeight: '100vh', backgroundColor: '#f3f3f3' }}>
+    <div className="min-h-screen bg-gray-100">
       {/* Top header bar */}
       <header
         style={{

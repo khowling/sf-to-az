@@ -11,18 +11,18 @@ interface RecordFormProps {
 
 export default function RecordForm({ fields, values, onChange, errors = {}, columns = 2 }: RecordFormProps) {
   return (
-    <div className={`slds-form slds-form_stacked slds-grid slds-wrap slds-gutters_small`}>
+    <div className={`grid gap-4 ${columns === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
       {fields.map((f) => (
-        <div key={f.fieldName} className={columns === 2 ? 'slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-around_xx-small' : 'slds-col slds-size_1-of-1 slds-p-around_xx-small'}>
-          <div className={`slds-form-element ${errors[f.fieldName] ? 'slds-has-error' : ''}`}>
-            <label className="slds-form-element__label">
-              {f.required && <abbr className="slds-required" title="required">*</abbr>}
+        <div key={f.fieldName}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {f.required && <span className="text-red-500 mr-0.5" title="required">*</span>}
               {f.label}
             </label>
-            <div className="slds-form-element__control">
+            <div>
               {renderField(f, values[f.fieldName], (v) => onChange(f.fieldName, v), errors[f.fieldName])}
             </div>
-            {errors[f.fieldName] && <div className="slds-form-element__help">{errors[f.fieldName]}</div>}
+            {errors[f.fieldName] && <p className="mt-1 text-sm text-red-600">{errors[f.fieldName]}</p>}
           </div>
         </div>
       ))}
@@ -36,7 +36,7 @@ function renderField(
   onChange: (v: unknown) => void,
   error?: string,
 ) {
-  const base = error ? 'slds-input slds-has-error' : 'slds-input';
+  const base = `w-full rounded-md border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${error ? 'border-red-500' : 'border-gray-300'}`;
 
   if (field.fieldType === 'lookup' && field.fieldName === 'accountId') {
     return <AccountLookup value={(value as string) ?? null} onChange={(v) => onChange(v)} error={error} />;
@@ -45,28 +45,24 @@ function renderField(
   switch (field.fieldType) {
     case 'boolean':
       return (
-        <div className="slds-checkbox">
+        <label className="inline-flex items-center">
           <input
             type="checkbox"
             checked={!!value}
             onChange={(e) => onChange(e.target.checked)}
             id={`cb-${field.fieldName}`}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label className="slds-checkbox__label" htmlFor={`cb-${field.fieldName}`}>
-            <span className="slds-checkbox_faux"></span>
-          </label>
-        </div>
+        </label>
       );
     case 'picklist':
       return (
-        <div className="slds-select_container">
-          <select value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} className="slds-select">
-            <option value="">— Select —</option>
-            {field.options.map((opt) => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        </div>
+        <select value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)} className={base}>
+          <option value="">— Select —</option>
+          {field.options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
       );
     case 'number':
       return (

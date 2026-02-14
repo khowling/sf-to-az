@@ -53,29 +53,21 @@ export default function ContactList() {
     { key: 'accountName', label: 'Account' },
   ];
 
-  if (isLoading) return <p className="slds-text-color_weak">Loading…</p>;
+  if (isLoading) return <p className="text-gray-400">Loading…</p>;
 
   return (
     <div>
-      <div className="slds-page-header slds-m-bottom_medium">
-        <div className="slds-page-header__row">
-          <div className="slds-page-header__col-title">
-            <h1 className="slds-page-header__title">Contacts</h1>
-          </div>
-          <div className="slds-page-header__col-actions">
-            <div className="slds-page-header__controls">
-              <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="slds-button slds-button_brand">
-                New
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="mb-6 flex items-center justify-between rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900">Contacts</h1>
+        <button onClick={() => { setShowModal(true); setFormValues({}); setErrors({}); }} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          New
+        </button>
       </div>
       <RecordTable columns={columns} data={contacts as unknown as Record<string, unknown>[]} onRowClick={(r) => navigate(`/contacts/${r.id}`)} searchable />
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Contact" footer={
         <>
-          <button onClick={() => setShowModal(false)} className="slds-button slds-button_neutral">Cancel</button>
-          <button onClick={handleSave} className="slds-button slds-button_brand">Save</button>
+          <button onClick={() => setShowModal(false)} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Cancel</button>
+          <button onClick={handleSave} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Save</button>
         </>
       }>
         <RecordForm fields={formFields} values={formValues} onChange={(k, v) => setFormValues((p) => ({ ...p, [k]: v }))} errors={errors} />

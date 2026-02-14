@@ -32,18 +32,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="slds-notify_container slds-is-relative" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 10000 }}>
+      <div className="fixed top-4 right-4 z-[10000] flex flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`slds-notify slds-notify_toast ${
-              t.type === 'success' ? 'slds-theme_success' : 'slds-theme_error'
+            className={`rounded-lg px-4 py-3 text-white shadow-lg ${
+              t.type === 'success' ? 'bg-green-600' : 'bg-red-600'
             }`}
             role="status"
           >
-            <div className="slds-notify__content">
-              <h2 className="slds-text-heading_small">{t.message}</h2>
-            </div>
+            <p className="text-sm font-medium">{t.message}</p>
           </div>
         ))}
       </div>
