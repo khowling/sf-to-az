@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 function StatCard({ label, count, subtitle, to, color }: { label: string; count: number; subtitle?: string; to: string; color: string }) {
   return (
@@ -71,7 +71,7 @@ export default function Home() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Opportunity Pipeline by Stage - Count */}
         <div className="rounded-lg bg-white shadow-sm border border-gray-200">
           <div className="px-4 py-3 border-b border-gray-200">
@@ -79,12 +79,11 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 10 }} />
+                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="count" fill="#9050e9" name="Opportunity Count" />
               </BarChart>
             </ResponsiveContainer>
@@ -98,12 +97,11 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: 10, bottom: 70 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 10 }} />
+                <XAxis dataKey="stage" angle={-40} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 5 }} />
                 <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="value" fill="#0176d3" name="Total Value ($)" />
               </BarChart>
             </ResponsiveContainer>
@@ -116,17 +114,18 @@ export default function Home() {
             <h2 className="text-sm font-semibold text-gray-900 truncate">Top 10 Industries by Account Count</h2>
           </div>
           <div className="p-3">
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={industryData}
                   cx="50%"
-                  cy="50%"
+                  cy="45%"
                   labelLine={false}
                   label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={70}
                   fill="#8884d8"
                   dataKey="value"
+                  style={{ fontSize: 10 }}
                 >
                   {industryData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={INDUSTRY_COLORS[index % INDUSTRY_COLORS.length]} />
