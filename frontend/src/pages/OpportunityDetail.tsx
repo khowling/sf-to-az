@@ -31,7 +31,7 @@ function StageProgress({ current }: { current: string }) {
   const isLost = current === 'Closed Lost';
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+    <div className="flex flex-wrap items-center w-full gap-2">
       {stages.map((stage, i) => {
         const isComplete = i < activeIdx;
         const isCurrent = stage === current;
@@ -45,28 +45,26 @@ function StageProgress({ current }: { current: string }) {
         else if (isCurrent) { bg = '#0176d3'; fg = '#fff'; border = '#0176d3'; }
 
         return (
-          <div key={stage} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+          <div key={stage} className="flex items-center flex-1 min-w-0">
             <div
+              className="flex-1 relative text-center transition-all"
               style={{
-                flex: 1,
-                position: 'relative',
                 padding: '0.5rem 0.75rem',
                 backgroundColor: bg,
                 color: fg,
-                textAlign: 'center',
                 fontSize: '0.75rem',
                 fontWeight: isCurrent ? 700 : 500,
                 clipPath: i === 0
-                  ? 'polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%)'
+                  ? 'polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)'
                   : i === stages.length - 1
-                  ? 'polygon(12px 0, 100% 0, 100% 100%, 0 100%, 12px 50%)'
-                  : 'polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%)',
-                marginLeft: i > 0 ? '-6px' : 0,
+                  ? 'polygon(10px 0, 100% 0, 100% 100%, 0 100%, 10px 50%)'
+                  : 'polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%)',
+                marginLeft: i > 0 ? '-8px' : 0,
                 zIndex: stages.length - i,
                 boxShadow: isCurrent ? '0 0 0 2px #fff, 0 0 0 4px ' + border : 'none',
                 borderRadius: isCurrent ? '2px' : 0,
-                transition: 'all 0.2s ease',
                 lineHeight: 1.3,
+                minHeight: '2rem',
               }}
             >
               {isComplete ? '✓ ' : ''}{stage}
@@ -189,19 +187,19 @@ export default function OpportunityDetail() {
   return (
     <div>
       <div className="mb-6 rounded-lg bg-white px-6 py-4 shadow-sm border border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wider text-gray-500">Opportunity</p>
             <h1 className="text-2xl font-bold text-gray-900 truncate">{opp.name}</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:flex-shrink-0">
             <button onClick={startEdit} className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Edit</button>
             <button onClick={() => { if (confirm('Delete this opportunity?')) deleteMut.mutate(); }} className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">Delete</button>
           </div>
         </div>
-        <div className="mt-4 flex gap-8">
+        <div className="mt-4 flex flex-wrap gap-4 sm:gap-8">
           {highlights.map((h) => (
-            <div key={h.label}>
+            <div key={h.label} className="min-w-0">
               <p className="text-xs font-medium text-gray-500 truncate">{h.label}</p>
               {h.link ? (
                 <Link to={h.link} className="text-sm text-blue-600 hover:text-blue-700">{h.value}</Link>
