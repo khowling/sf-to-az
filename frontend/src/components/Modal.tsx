@@ -16,7 +16,7 @@ export default function Modal({ isOpen, onClose, title, children, footer }: Moda
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div role="dialog" tabIndex={-1} className="relative z-10 w-full max-w-lg rounded-lg bg-white shadow-xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">{title}</h2>
+          <h2 className="flex-1 min-w-0 text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">{title}</h2>
           <button
             className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
             onClick={onClose}

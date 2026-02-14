@@ -181,7 +181,7 @@ export default function Settings() {
             <nav className="py-1 flex md:flex-col overflow-x-auto md:overflow-x-visible">
               {sidebarItems.filter(i => i.type === 'object').map(item => (
                 <button key={item.key} onClick={() => setActiveSidebar(item.key)}
-                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 border-b-2 md:border-b-0 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   {item.icon} {item.label}
                 </button>
               ))}
@@ -192,7 +192,7 @@ export default function Settings() {
             <nav className="py-1 flex md:flex-col overflow-x-auto md:overflow-x-visible">
               {sidebarItems.filter(i => i.type === 'tool').map(item => (
                 <button key={item.key} onClick={() => setActiveSidebar(item.key)}
-                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${activeSidebar === item.key ? 'bg-blue-50 text-blue-700 border-b-2 md:border-b-0 md:border-r-2 border-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
                   {item.icon} {item.label}
                 </button>
               ))}
