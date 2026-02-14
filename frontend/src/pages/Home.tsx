@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { accountsApi, contactsApi, opportunitiesApi } from '../api/client';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, FunnelChart, Funnel, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList } from 'recharts';
 
 function StatCard({ label, count, subtitle, to, color }: { label: string; count: number; subtitle?: string; to: string; color: string }) {
   return (
@@ -64,6 +64,17 @@ export default function Home() {
     .slice(0, 10);
 
   const INDUSTRY_COLORS = ['#0176d3', '#06a59a', '#9050e9', '#e16032', '#54698d', '#16325c', '#0070d2', '#00a1e0', '#4bca81', '#ffb75d'];
+
+  // Opportunity Funnel (active pipeline stages only)
+  const funnelStages = ['Prospecting', 'Qualification', 'Needs Analysis', 'Proposal', 'Negotiation', 'Closed Won'];
+  const FUNNEL_COLORS = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#16a34a'];
+  const funnelData = funnelStages
+    .map((stage, i) => ({
+      name: stage,
+      value: oppsByStage[stage]?.count || 0,
+      fill: FUNNEL_COLORS[i],
+    }))
+    .filter(d => d.value > 0);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBarClick = (data: any) => {
@@ -183,6 +194,32 @@ export default function Home() {
                 <p className="text-xs text-gray-500">With Phone</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Opportunity Funnel */}
+        <div className="rounded-lg bg-white shadow-sm border border-gray-200">
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Opportunity Funnel</h2>
+          </div>
+          <div className="p-3">
+            {funnelData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <FunnelChart>
+                  <Tooltip formatter={(value, name) => [`${Number(value).toLocaleString()} opportunities`, name]} />
+                  <Funnel dataKey="value" data={funnelData} isAnimationActive>
+                    <LabelList position="center" fill="#fff" fontSize={10} fontWeight={600}
+                      formatter={(v: unknown) => Number(v).toLocaleString()} />
+                    <LabelList position="right" fill="#374151" fontSize={10} dataKey="name" />
+                    {funnelData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Funnel>
+                </FunnelChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[250px] text-sm text-gray-400">No opportunity data</div>
+            )}
           </div>
         </div>
       </div>
