@@ -93,7 +93,7 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -15, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
@@ -111,7 +111,7 @@ export default function Home() {
           </div>
           <div className="p-3">
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -5, bottom: 5 }}>
+              <BarChart data={pipelineData} margin={{ top: 5, right: 10, left: -5, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 10, dy: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000000 ? `$${(v / 1000000).toFixed(0)}M` : v >= 1000 ? `$${(v / 1000).toFixed(0)}K` : `$${v}`} />
