@@ -6,12 +6,14 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 function StatCard({ label, count, subtitle, to, color }: { label: string; count: number; subtitle?: string; to: string; color: string }) {
   return (
     <Link to={to} className="block rounded-lg bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow no-underline">
-      <div className="p-6 text-center">
-        <div className="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full text-white text-3xl font-bold" style={{ backgroundColor: color }}>
+      <div className="px-4 py-4 flex items-center gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white text-lg font-bold" style={{ backgroundColor: color }}>
           {count.toLocaleString()}
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">{label}</h3>
-        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">{label}</h3>
+          {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+        </div>
       </div>
     </Link>
   );
@@ -76,10 +78,10 @@ export default function Home() {
             <h2 className="text-base font-semibold text-gray-900 truncate">Opportunity Pipeline by Stage</h2>
           </div>
           <div className="p-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pipelineData}>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={pipelineData} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-45} textAnchor="end" height={100} style={{ fontSize: '0.75rem' }} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 11 }} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
@@ -95,10 +97,10 @@ export default function Home() {
             <h2 className="text-base font-semibold text-gray-900 truncate">Opportunity Value by Stage</h2>
           </div>
           <div className="p-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pipelineData}>
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={pipelineData} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="stage" angle={-45} textAnchor="end" height={100} style={{ fontSize: '0.75rem' }} />
+                <XAxis dataKey="stage" angle={-35} textAnchor="end" interval={0} tick={{ fontSize: 11 }} />
                 <YAxis />
                 <Tooltip formatter={(value) => fmt.format(Number(value))} />
                 <Legend />
