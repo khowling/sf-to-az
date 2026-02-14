@@ -61,10 +61,10 @@ export default function Home() {
   const funnelData = funnelStages
     .map((stage, i) => ({
       stage,
-      count: oppsByStage[stage]?.count || 0,
+      value: oppsByStage[stage]?.value || 0,
       fill: FUNNEL_COLORS[i],
     }))
-    .filter(d => d.count > 0);
+    .filter(d => d.value > 0);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleBarClick = (data: any) => {
@@ -217,13 +217,13 @@ export default function Home() {
             {funnelData.length > 0 ? (
               <div className="flex flex-col items-center gap-1">
                 {funnelData.map((d, i) => {
-                  const maxCount = Math.max(...funnelData.map(f => f.count));
-                  const widthPct = maxCount > 0 ? Math.max(25, (d.count / maxCount) * 100) : 25;
+                  const maxVal = Math.max(...funnelData.map(f => f.value));
+                  const widthPct = maxVal > 0 ? Math.max(25, (d.value / maxVal) * 100) : 25;
                   return (
                     <button key={d.stage} onClick={() => navigate(`/opportunities?stage=${encodeURIComponent(d.stage)}`)}
                       className="relative flex items-center justify-center py-2 rounded text-white text-xs font-semibold transition-all hover:opacity-90 cursor-pointer border-0"
                       style={{ width: `${widthPct}%`, backgroundColor: FUNNEL_COLORS[i], minHeight: '2rem' }}>
-                      <span>{d.stage} · {d.count.toLocaleString()}</span>
+                      <span>{d.stage} · {fmt.format(d.value)}</span>
                     </button>
                   );
                 })}
