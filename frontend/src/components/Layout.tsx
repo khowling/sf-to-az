@@ -42,9 +42,9 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-20 h-14 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl px-6 flex items-center justify-between">
+      <header className="sticky top-0 z-20 h-14 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between gap-2">
         {/* Logo */}
-        <NavLink to="/" className="flex items-center gap-2.5 no-underline group">
+        <NavLink to="/" className="flex items-center gap-2.5 no-underline group shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-600/25 group-hover:shadow-md group-hover:shadow-blue-600/30 transition-shadow">
             <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5 text-white">
               <path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z" fill="currentColor" />
@@ -52,7 +52,7 @@ export default function Layout() {
               <path d="M16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" fill="currentColor" />
             </svg>
           </div>
-          <span className="text-[0.9375rem] font-semibold text-gray-900 tracking-tight">
+          <span className="hidden sm:inline text-[0.9375rem] font-semibold text-gray-900 tracking-tight">
             <span className="text-gray-400 font-normal">my</span>CRM
           </span>
         </NavLink>
@@ -62,20 +62,20 @@ export default function Layout() {
           {navLinks.map(l => (
             <NavLink key={l.to} to={l.to} end={l.to === '/'}
               className={({ isActive }) =>
-                `flex items-center gap-1.5 px-3 py-1.5 text-[0.8125rem] font-medium no-underline transition-all border-b-2 ${
+                `flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-[0.8125rem] font-medium no-underline transition-all border-b-2 ${
                   isActive
                     ? 'border-blue-600 text-gray-900'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`
               }>
               {l.icon}
-              <span>{l.label}</span>
+              <span className="hidden md:inline">{l.label}</span>
             </NavLink>
           ))}
         </nav>
 
         {/* Search */}
-        <div ref={searchRef} className="relative w-72">
+        <div ref={searchRef} className="relative w-32 sm:w-48 md:w-72">
           <div className="relative">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -138,7 +138,7 @@ export default function Layout() {
         {/* Settings */}
         <NavLink to="/settings"
           className={({ isActive }) =>
-            `flex items-center justify-center w-8 h-8 rounded-lg no-underline transition-all ${
+            `flex items-center justify-center w-8 h-8 rounded-lg no-underline transition-all shrink-0 ${
               isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
             }`
           }
