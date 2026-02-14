@@ -47,7 +47,7 @@ function StageProgress({ current }: { current: string }) {
         return (
           <div key={stage} className="flex items-center flex-1 min-w-0">
             <div
-              className="flex-1 relative text-center transition-all"
+              className="flex-1 relative text-center transition-all min-h-8"
               style={{
                 padding: '0.5rem 0.75rem',
                 backgroundColor: bg,
@@ -64,7 +64,6 @@ function StageProgress({ current }: { current: string }) {
                 boxShadow: isCurrent ? '0 0 0 2px #fff, 0 0 0 4px ' + border : 'none',
                 borderRadius: isCurrent ? '2px' : 0,
                 lineHeight: 1.3,
-                minHeight: '2rem',
               }}
             >
               {isComplete ? '✓ ' : ''}{stage}
