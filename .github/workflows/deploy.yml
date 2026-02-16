@@ -194,7 +194,13 @@ jobs:
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add README.md
             git commit -m "Update deployed application URL in README [skip ci]"
-            git push
+            
+            # Push changes with retry logic
+            if ! git push; then
+              echo "::warning::Failed to push README update. This may be due to concurrent modifications."
+            else
+              echo "Successfully updated README with deployed URL: ${APP_URL}"
+            fi
           fi
 
       - name: Create deployment summary
