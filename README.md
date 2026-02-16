@@ -6,7 +6,7 @@ A simple, modern customer relationship management (CRM) application for managing
 
 ## 🚀 Live Demo
 
-**[Access the deployed application →](https://mycrm-app.proudstone-b1a8f7e3.uksouth.azurecontainerapps.io)**
+**[Access the deployed application →](https://mycrm-app.yellowdesert-73fd033f.uksouth.azurecontainerapps.io)**
 
 > ⚠️ **Note:** This application runs on low-cost Azure services (Container Apps with scale-to-zero). The first request after a period of inactivity may experience a cold start delay of 10-30 seconds while the container spins up.
 
