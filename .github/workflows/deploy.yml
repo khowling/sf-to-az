@@ -85,6 +85,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [changes, infra]
     if: always() && !failure() && !cancelled()
+    environment:
+      name: production
+      url: ${{ steps.acr.outputs.APP_URL }}
     steps:
       - uses: actions/checkout@v4
       - name: Log in to Azure
@@ -153,3 +156,62 @@ jobs:
 
       - name: Print app URL
         run: echo "✅ Deployed to ${{ steps.acr.outputs.APP_URL }}"
+      
+      - name: Get Azure costs
+        id: costs
+        continue-on-error: true
+        run: |
+          # Fetch cost data (may not be available for new deployments)
+          START_DATE=$(date -u -d '30 days ago' +%Y-%m-%d 2>/dev/null || date -u -v-30d +%Y-%m-%d)
+          END_DATE=$(date -u +%Y-%m-%d)
+          
+          COST_DATA=$(az costmanagement query \
+            --type ActualCost \
+            --dataset-aggregation totalCost=Sum \
+            --dataset-grouping name=ResourceGroupName type=Dimension \
+            --dataset-filter "{\"dimensions\":{\"name\":\"ResourceGroupName\",\"operator\":\"In\",\"values\":[\"${{ env.RESOURCE_GROUP }}\"]}}" \
+            --timeframe Custom \
+            --time-period from="$START_DATE" to="$END_DATE" \
+            --scope "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            --query "properties.rows[0][0]" \
+            -o tsv 2>/dev/null || echo "0")
+          
+          if [ "$COST_DATA" != "0" ] && [ -n "$COST_DATA" ]; then
+            echo "COST_30_DAYS=$COST_DATA" >> $GITHUB_OUTPUT
+            echo "HAS_COST_DATA=true" >> $GITHUB_OUTPUT
+          else
+            echo "HAS_COST_DATA=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Deployment Successful
+          
+          **Application URL:** ${{ steps.acr.outputs.APP_URL }}
+          
+          **Version:** \`${{ steps.build.outputs.IMAGE_TAG }}\` (commit: \`${{ github.sha }}\`)
+          
+          **Resources:**
+          - Resource Group: \`${{ env.RESOURCE_GROUP }}\`
+          - Location: \`${{ env.LOCATION }}\`
+          - Container Registry: \`${{ steps.acr.outputs.ACR_NAME }}\`
+          EOF
+          
+          if [ "${{ steps.costs.outputs.HAS_COST_DATA }}" = "true" ]; then
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          
+          **💰 Cost Information:**
+          - Last 30 days: \$${{ steps.costs.outputs.COST_30_DAYS }} USD
+          EOF
+          else
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          
+          **💰 Estimated Monthly Cost:** ~\$15-25 USD (actual cost data not yet available)
+          EOF
+          fi
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          
+          ⚠️ **Cold Start Notice:** First request after inactivity may take 10-30 seconds as the container scales from zero.
+          EOF
