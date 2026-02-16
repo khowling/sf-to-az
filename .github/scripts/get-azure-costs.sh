@@ -13,8 +13,8 @@ if [ -z "$SUBSCRIPTION_ID" ]; then
 fi
 
 # Get costs for the last 30 days
-START_DATE=$(date -d '30 days ago' +%Y-%m-%d)
-END_DATE=$(date +%Y-%m-%d)
+START_DATE=$(date -u -d '30 days ago' +%Y-%m-%d 2>/dev/null || date -u -v-30d +%Y-%m-%d)
+END_DATE=$(date -u +%Y-%m-%d)
 
 echo "Fetching costs for resource group: $RESOURCE_GROUP"
 echo "Period: $START_DATE to $END_DATE"

@@ -65,7 +65,7 @@ jobs:
           COST="${{ steps.costs.outputs.COST_30_DAYS }}"
           
           # Update the cost line in README.md
-          sed -i "s/\*\*Estimated Monthly Cost:\*\* ~\$[0-9-]* USD.*/\*\*Estimated Monthly Cost:\*\* ~\$$COST USD (last 30 days actual cost)/" README.md
+          sed -i "s/\*\*Estimated Monthly Cost:\*\* ~\$[0-9]\+\(-[0-9]\+\)\? USD.*/\*\*Estimated Monthly Cost:\*\* ~\$$COST USD (last 30 days actual cost)/" README.md
           
           # Check if anything changed
           if git diff --quiet README.md; then
