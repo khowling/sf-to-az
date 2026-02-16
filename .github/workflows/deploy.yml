@@ -184,7 +184,7 @@ jobs:
         run: |
           APP_URL="${{ steps.acr.outputs.APP_URL }}"
           # Update the README with the actual deployed URL
-          sed -i "s|https://mycrm-app\.[a-z]*-[a-z0-9]*.uksouth.azurecontainerapps.io|${APP_URL}|g" README.md
+          sed -i "s|https://mycrm-app\.[^/]*\.uksouth\.azurecontainerapps\.io|${APP_URL}|g" README.md
           
           # Check if there are changes to commit
           if git diff --quiet README.md; then
