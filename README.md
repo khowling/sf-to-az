@@ -1,6 +1,20 @@
 # myCRM
 
+![Deploy to Azure](https://github.com/khowling/sf-to-az/actions/workflows/deploy.yml/badge.svg)
+
 A simple, modern customer relationship management (CRM) application for managing your business contacts, accounts, and sales opportunities — all in one place.
+
+## 🚀 Live Demo
+
+**[Access the deployed application →](https://mycrm-app.proudstone-b1a8f7e3.uksouth.azurecontainerapps.io)**
+
+> ⚠️ **Note:** This application runs on low-cost Azure services (Container Apps with scale-to-zero). The first request after a period of inactivity may experience a cold start delay of 10-30 seconds while the container spins up.
+
+### Deployment Status
+
+- **Environment:** Azure UK South
+- **Services:** Azure Container Apps (Basic tier), PostgreSQL Flexible Server (Burstable B1ms), Azure Container Registry (Basic)
+- **Estimated Monthly Cost:** ~$15-25 USD (based on low usage with scale-to-zero enabled)
 
 ## What does it do?
 

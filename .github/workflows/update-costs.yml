@@ -1,0 +1,102 @@
+name: Update Cost Badge
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at 00:00 UTC to update cost information
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  RESOURCE_GROUP: mycrm-rg
+
+jobs:
+  update-costs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Get Azure costs
+        id: costs
+        continue-on-error: true
+        run: |
+          # Fetch cost data for last 30 days
+          START_DATE=$(date -u -d '30 days ago' +%Y-%m-%d 2>/dev/null || date -u -v-30d +%Y-%m-%d)
+          END_DATE=$(date -u +%Y-%m-%d)
+          
+          COST_DATA=$(az costmanagement query \
+            --type ActualCost \
+            --dataset-aggregation totalCost=Sum \
+            --dataset-grouping name=ResourceGroupName type=Dimension \
+            --dataset-filter "{\"dimensions\":{\"name\":\"ResourceGroupName\",\"operator\":\"In\",\"values\":[\"${{ env.RESOURCE_GROUP }}\"]}}" \
+            --timeframe Custom \
+            --time-period from="$START_DATE" to="$END_DATE" \
+            --scope "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            --query "properties.rows[0][0]" \
+            -o tsv 2>/dev/null || echo "0")
+          
+          if [ "$COST_DATA" != "0" ] && [ -n "$COST_DATA" ]; then
+            # Round to 2 decimal places
+            COST_ROUNDED=$(printf "%.2f" "$COST_DATA")
+            echo "COST_30_DAYS=$COST_ROUNDED" >> $GITHUB_OUTPUT
+            echo "HAS_COST_DATA=true" >> $GITHUB_OUTPUT
+            
+            # Calculate daily average
+            DAILY_AVG=$(echo "scale=2; $COST_DATA / 30" | bc)
+            echo "DAILY_AVG=$DAILY_AVG" >> $GITHUB_OUTPUT
+          else
+            echo "HAS_COST_DATA=false" >> $GITHUB_OUTPUT
+            echo "COST_30_DAYS=15-25" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Update README with costs
+        if: steps.costs.outputs.HAS_COST_DATA == 'true'
+        run: |
+          COST="${{ steps.costs.outputs.COST_30_DAYS }}"
+          
+          # Update the cost line in README.md
+          sed -i "s/\*\*Estimated Monthly Cost:\*\* ~\$[0-9]\+\(-[0-9]\+\)\? USD.*/\*\*Estimated Monthly Cost:\*\* ~\$$COST USD (last 30 days actual cost)/" README.md
+          
+          # Check if anything changed
+          if git diff --quiet README.md; then
+            echo "No changes to commit"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "Update Azure cost information (last 30 days: \$$COST)"
+            git push
+          fi
+      
+      - name: Create summary
+        run: |
+          if [ "${{ steps.costs.outputs.HAS_COST_DATA }}" = "true" ]; then
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 💰 Azure Cost Update
+          
+          **Last 30 days:** \$${{ steps.costs.outputs.COST_30_DAYS }} USD
+          **Daily average:** \$${{ steps.costs.outputs.DAILY_AVG }} USD
+          
+          Cost information has been updated in README.md
+          EOF
+          else
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 💰 Azure Cost Update
+          
+          Cost data is not yet available. This may be because:
+          - Costs are still being processed by Azure (can take 24-48 hours)
+          - The resource group is very new
+          
+          Using estimated cost range in README.md
+          EOF
+          fi
